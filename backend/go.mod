@@ -1,8 +1,6 @@
 module github.com/geoo115/charity-management-system
 
-go 1.23.0
-
-toolchain go1.24.4
+go 1.24.4
 
 require (
 	github.com/gin-gonic/gin v1.10.0
