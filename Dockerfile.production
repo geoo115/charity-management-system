@@ -1,31 +1,37 @@
 # Production Dockerfile for Lewisham Charity Hub
-FROM golang:1.24.4-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app
 
-# Copy everything at once
+# Copy go mod files first for better caching
+COPY backend/go.mod backend/go.sum ./
+
+# Download dependencies
+RUN go mod download && go mod verify
+
+# Copy the rest of the backend code
 COPY backend/ .
 
-# Debug: show what we have
-RUN ls -la && echo "=== Go version ===" && go version && echo "=== Module info ===" && go mod download
-
-# Build the application with correct module path
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o main ./cmd/api
+# Build the application
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -a -installsuffix cgo \
+    -ldflags="-w -s -X main.version=1.0.0" \
+    -o main ./cmd/api
 
 # Final stage
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk --no-cache add ca-certificates tzdata wget
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
 
 # Copy binary and docs
 COPY --from=builder /app/main .
-COPY backend/docs ./docs/
+COPY --from=builder /app/docs ./docs/
 
 # Create a non-root user
 RUN addgroup -g 1001 -S appgroup && \
@@ -43,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
 # Run the application
-CMD ["./main"] # Build trigger Wed Jul  2 11:56:31 PM BST 2025
+CMD ["./main"]
