@@ -9,8 +9,11 @@ WORKDIR /app
 # Copy everything at once
 COPY backend/ .
 
-# Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o main cmd/api/main.go
+# Debug: show what we have
+RUN ls -la && echo "=== Go version ===" && go version && echo "=== Module info ===" && go mod download
+
+# Build the application with explicit flags
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o main cmd/api/main.go
 
 # Final stage
 FROM alpine:latest
