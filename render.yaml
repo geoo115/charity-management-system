@@ -46,8 +46,10 @@ services:
   # Frontend Next.js Service
   - type: web
     name: lewisham-charity-hub-frontend
-    env: docker
-    dockerfilePath: ./Dockerfile.frontend
+    env: node
+    region: oregon
+    buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    startCommand: cd frontend && npm start
     healthCheckPath: /
     plan: free
     envVars:
