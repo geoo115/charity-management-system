@@ -1,16 +1,21 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  output: 'standalone',
   images: {
-    domains: ['localhost', 'api.lewishamCharity.org'],
+    domains: ['localhost', 'api.lewishamCharity.org', 'lewisham-charity-hub-api.onrender.com'],
   },
   async rewrites() {
-    return [
-      {
-        source: '/api/:path*',
-        destination: 'http://localhost:8080/api/:path*',
-      },
-    ];
+    // Only use rewrites in development
+    if (process.env.NODE_ENV === 'development') {
+      return [
+        {
+          source: '/api/:path*',
+          destination: 'http://localhost:8080/api/:path*',
+        },
+      ];
+    }
+    return [];
   },
   async redirects() {
     return [
