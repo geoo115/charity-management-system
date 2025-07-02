@@ -6,10 +6,28 @@ services:
     healthCheckPath: /health
     plan: free
     envVars:
-      - key: DATABASE_URL
+      - key: DB_HOST
         fromDatabase:
           name: lewisham-hub-db
-          property: connectionString
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: lewisham-hub-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: lewisham-hub-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: lewisham-hub-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: lewisham-hub-db
+          property: database
+      - key: DB_SSL_MODE
+        value: require
       - key: REDIS_URL
         fromService:
           type: redis
