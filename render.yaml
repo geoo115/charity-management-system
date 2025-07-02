@@ -55,7 +55,7 @@ services:
     envVars:
       - key: NEXT_PUBLIC_API_URL
         sync: false
-        value: https://lewisham-charity-hub-api.onrender.com
+        value: https://lewisham-charity-hub.onrender.com
       - key: NODE_ENV
         value: production
 
