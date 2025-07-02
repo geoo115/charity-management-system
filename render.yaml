@@ -24,12 +24,11 @@ services:
       - key: REFRESH_SECRET
         generateValue: true
 
+  - type: redis
+    name: lewisham-hub-redis
+    plan: free
+
 databases:
   - name: lewisham-hub-db
     databaseName: lewisham_hub
-    plan: free
-
-services:
-  - type: redis
-    name: lewisham-hub-redis
     plan: free 
