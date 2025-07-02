@@ -12,10 +12,10 @@ RUN go mod download
 
 # Copy source code
 COPY backend/ ./backend
-WORKDIR /app/backend/cmd/api
+WORKDIR /app/backend
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/main
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/main ./cmd/api/main.go
 
 # Final stage
 FROM alpine:latest
