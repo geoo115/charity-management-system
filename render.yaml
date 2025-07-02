@@ -27,6 +27,7 @@ services:
   - type: redis
     name: lewisham-hub-redis
     plan: free
+    ipAllowList: []
 
 databases:
   - name: lewisham-hub-db
