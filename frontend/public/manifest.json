@@ -1,0 +1,122 @@
+{
+  "name": "Lewisham Community Charity",
+  "short_name": "Lewisham Charity",
+  "description": "Supporting our community through organized donations and volunteer efforts",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "categories": ["community", "social", "nonprofit"],
+  "lang": "en-GB",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshot-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Lewisham Charity desktop view"
+    },
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "414x896",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Lewisham Charity mobile view"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Request Help",
+      "short_name": "Help Request",
+      "description": "Submit a new help request",
+      "url": "/visitor/help-request/new",
+      "icons": [
+        {
+          "src": "/icons/help.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Volunteer Dashboard",
+      "short_name": "Volunteer",
+      "description": "Access volunteer features",
+      "url": "/volunteer",
+      "icons": [
+        {
+          "src": "/icons/volunteer.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Donate",
+      "short_name": "Donate",
+      "description": "Make a donation",
+      "url": "/dashboard/donor/donate",
+      "icons": [
+        {
+          "src": "/icons/donate.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "View Impact",
+      "short_name": "Impact",
+      "description": "See your donation impact and analytics",
+      "url": "/dashboard/donor/impact",
+      "icons": [
+        {
+          "src": "/icons/impact.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Donation History",
+      "short_name": "History",
+      "description": "View your donation history and receipts",
+      "url": "/dashboard/donor/history",
+      "icons": [
+        {
+          "src": "/icons/history.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
+} 

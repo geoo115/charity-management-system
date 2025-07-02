@@ -1,0 +1,53 @@
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+docs/
+
+# Development files
+.env
+.env.*
+.vscode/
+.idea/
+*.log
+
+# Frontend (for backend-only build)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/.env.*
+
+# Backend development
+backend/bin/
+backend/vendor/
+backend/*.log
+backend/tmp/
+
+# Testing
+*_test.go
+**/tests/
+coverage.out
+coverage.html
+
+# Monitoring and observability (not needed in production)
+monitoring/
+load-testing/
+docker-compose*.yml
+Makefile
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Build artifacts
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib 

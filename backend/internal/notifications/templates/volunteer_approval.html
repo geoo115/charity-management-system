@@ -1,0 +1,24 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2 style="color: #16a34a;">🎉 Volunteer Application Approved!</h2>
+  <p>Hello {{.Name}},</p>
+  <p>Congratulations! We're excited to inform you that your volunteer application has been <strong>approved</strong>!</p>
+  <div style="background-color: #f0f9ff; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #16a34a;">
+    <p><strong>Welcome to the {{.OrganizationName}} volunteer team!</strong></p>
+    <p><strong>Your Role:</strong> {{.ApprovedRole}}</p>
+    <p><strong>Start Date:</strong> {{.StartDate}}</p>
+  </div>
+  <p><strong>Next Steps:</strong></p>
+  <ol>
+    <li>Log in to your volunteer portal at <a href="{{.PortalUrl}}">{{.PortalUrl}}</a></li>
+    <li>Complete any required training modules</li>
+    <li>Browse available shifts and sign up for your first volunteer session</li>
+    <li>Join our volunteer orientation session (details will be sent separately)</li>
+  </ol>
+  {{if .SupervisorInfo}}
+  <p><strong>Your Volunteer Supervisor:</strong> {{.SupervisorInfo}}</p>
+  {{end}}
+  <p>We're thrilled to have you on board and look forward to working with you to make a positive impact in our community!</p>
+  <p>If you have any questions, please don't hesitate to reach out.</p>
+  <p>Welcome to the team!</p>
+  <p>{{.OrganizationName}} Volunteer Team</p>
+</div>

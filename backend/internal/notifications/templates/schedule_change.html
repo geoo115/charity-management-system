@@ -1,0 +1,17 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Schedule Change Notification</h2>
+  <p>Hello {{.FirstName}} {{.LastName}},</p>
+  <p>There has been a change to one of your scheduled volunteer shifts:</p>
+  
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p><strong>Previous Date:</strong> {{.PreviousDate}}</p>
+    <p><strong>Previous Time:</strong> {{.PreviousTime}}</p>
+    <p><strong>New Date:</strong> {{.NewDate}}</p>
+    <p><strong>New Time:</strong> {{.NewTime}}</p>
+    <p><strong>Location:</strong> {{.Location}}</p>
+    <p><strong>Role:</strong> {{.Role}}</p>
+  </div>
+  
+  <p>If this new schedule works for you, no action is needed. If you cannot make this new time, please log in to your volunteer dashboard to cancel this shift.</p>
+  
+</div>

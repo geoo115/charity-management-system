@@ -1,0 +1,27 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Volunteer Application Status Update</h2>
+  <p>Hello {{.Name}},</p>
+  <p>Thank you for your patience during our review process. After careful consideration, we regret to inform you that we are unable to approve your volunteer application at this time.</p>
+  <div style="background-color: #fef2f2; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #dc2626;">
+    <p><strong>Application Status:</strong> Not Approved</p>
+    {{if .RejectionReason}}
+    <p><strong>Reason:</strong> {{.RejectionReason}}</p>
+    {{end}}
+  </div>
+  <p>Please note that this decision doesn't reflect on your personal capabilities or character. There are various factors that influence our volunteer selection process, including:</p>
+  <ul>
+    <li>Current volunteer capacity in your area of interest</li>
+    <li>Specific skill requirements for available positions</li>
+    <li>Scheduling compatibility</li>
+  </ul>
+  <p>We encourage you to apply again in the future as our volunteer needs evolve. In the meantime, you might consider:</p>
+  <ul>
+    <li>Following us on social media for updates on volunteer opportunities</li>
+    <li>Participating in our community events as a supporter</li>
+    <li>Referring friends who might be interested in volunteering</li>
+  </ul>
+  <p>If you have any questions about this decision, please feel free to contact us.</p>
+  <p>Thank you for your interest in supporting our community.</p>
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}} Volunteer Team</p>
+</div>

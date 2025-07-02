@@ -1,0 +1,15 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Help Request Update</h2>
+  <p>Hello {{.Name}},</p>
+  <p>We're writing to let you know that your help request is now being processed:</p>
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p><strong>Reference Number:</strong> {{.Reference}}</p>
+    <p><strong>Request Category:</strong> {{.Category}}</p>
+    <p><strong>Current Status:</strong> {{.Status}}</p>
+    <p><strong>Scheduled Visit:</strong> {{.VisitDay}} at {{.TimeSlot}}</p>
+  </div>
+  <p>One of our team members will be in touch with you soon to discuss the next steps.</p>
+  <p>If you have any questions in the meantime, please contact us and include your reference number.</p>
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}}</p>
+</div>

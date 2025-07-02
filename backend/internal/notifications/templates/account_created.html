@@ -1,0 +1,52 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Welcome to {{if .OrganizationName}}{{.OrganizationName}}{{else}}Lewisham Charity{{end}}</h2>
+  <p>Hello {{.Name}},</p>
+  
+  {{if .WelcomeMessage}}
+  <p>{{.WelcomeMessage}}</p>
+  {{else}}
+  <p>Your account has been successfully created{{if .AccountType}} as a {{.AccountType}} user{{end}}! Welcome to our community platform.</p>
+  {{end}}
+  
+  {{if .AccountType}}
+  <div style="background-color: #f0f9ff; padding: 15px; margin: 15px 0; border-radius: 5px; border-left: 4px solid #0ea5e9;">
+  {{else}}
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+  {{end}}
+    {{if .AccountType}}
+    <p><strong>Account Details:</strong></p>
+    {{end}}
+    <p><strong>Email:</strong> {{.Email}}</p>
+    {{if .AccountType}}
+    <p><strong>Account Type:</strong> {{.AccountType}}</p>
+    {{end}}
+    {{if .TempPassword}}
+    <p><strong>Temporary Password:</strong> {{.TempPassword}}</p>
+    <p>For security reasons, please change your password after logging in for the first time.</p>
+    {{end}}
+    
+    <p style="text-align: center; margin: 20px 0;">
+      <a href="{{if .LoginUrl}}{{.LoginUrl}}{{else}}{{.LoginURL}}{{end}}" style="background-color: #4f46e5; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Login to Your Account</a>
+    </p>
+  </div>
+  
+  {{if .AccountType}}
+  <p><strong>Getting Started:</strong></p>
+  <ol>
+    <li>Log in to your account using the link above</li>
+    <li>Complete your profile with additional information</li>
+    <li>Explore available features based on your account type</li>
+    <li>Set your notification preferences</li>
+  </ol>
+  {{end}}
+  
+  <p>If you have any questions or need assistance{{if .AccountType}} getting started{{end}}, please don't hesitate to contact our support team.</p>
+  
+  {{if .AccountType}}
+  <p>Welcome aboard!</p>
+  <p>{{if .OrganizationName}}{{.OrganizationName}}{{else}}Lewisham Charity{{end}} Team</p>
+  {{else}}
+  <p>Best regards,</p>
+  <p>{{if .OrganizationName}}{{.OrganizationName}}{{else}}Lewisham Charity{{end}}</p>
+  {{end}}
+</div>

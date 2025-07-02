@@ -1,0 +1,15 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Shift Cancellation Confirmation</h2>
+  <p>Hello {{.Name}},</p>
+  <p>We're confirming that your volunteer shift has been cancelled:</p>
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p><strong>Date:</strong> {{.Date}}</p>
+    <p><strong>Time:</strong> {{.Time}}</p>
+    <p><strong>Location:</strong> {{.Location}}</p>
+    <p><strong>Role:</strong> {{.Role}}</p>
+  </div>
+  <p>If you did not request this cancellation, please contact us immediately.</p>
+  <p>We hope to see you at future volunteer opportunities!</p>
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}}</p>
+</div>

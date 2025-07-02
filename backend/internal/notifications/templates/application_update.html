@@ -1,0 +1,37 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Volunteer Application Update</h2>
+  <p>Hello {{.Name}},</p>
+  
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p>Your volunteer application status has been updated to: <strong>{{.Status}}</strong></p>
+    
+    {{if .HasFeedback}}
+    <p><strong>Feedback:</strong> {{.Feedback}}</p>
+    {{end}}
+  </div>
+  
+  {{if eq .Status "Approved"}}
+  <p>Congratulations! Your application to volunteer with us has been approved. You can now log in to your volunteer dashboard to view and sign up for available shifts.</p>
+  <p>
+    <a href="{{.DashboardUrl}}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+      Access Volunteer Dashboard
+    </a>
+  </p>
+  {{else if eq .Status "Rejected"}}
+  <p>Unfortunately, we are unable to proceed with your volunteer application at this time. Please review any feedback provided, and feel free to contact us if you have any questions.</p>
+  {{else if eq .Status "Pending"}}
+  <p>Your application is currently being reviewed. We'll notify you once a decision has been made.</p>
+  {{else if eq .Status "More Information Required"}}
+  <p>Please log in to your account to provide the additional information requested for your application.</p>
+  <p>
+    <a href="{{.ApplicationUrl}}" style="display: inline-block; background-color: #4f46e5; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+      Update Application
+    </a>
+  </p>
+  {{end}}
+  
+  <p>Thank you for your interest in volunteering with us.</p>
+  
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}}</p>
+</div>

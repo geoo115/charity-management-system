@@ -1,0 +1,22 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Volunteer Application Received</h2>
+  <p>Hello {{.Name}},</p>
+  <p>Thank you for your interest in volunteering with {{.OrganizationName}}. We have received your application and appreciate your willingness to contribute to our community.</p>
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p><strong>Application Details:</strong></p>
+    <p><strong>Name:</strong> {{.Name}}</p>
+    <p><strong>Email:</strong> {{.Email}}</p>
+    <p><strong>Role Interest:</strong> {{.RoleInterest}}</p>
+    <p><strong>Submitted On:</strong> {{.SubmittedDate}}</p>
+  </div>
+  <p><strong>What happens next?</strong></p>
+  <ol>
+    <li>Our volunteer coordinator will review your application</li>
+    <li>You may be contacted for a brief interview or orientation</li>
+    <li>We'll notify you of the application status within 5-7 business days</li>
+  </ol>
+  <p>If you have any questions in the meantime, please don't hesitate to contact us.</p>
+  <p>Thank you for your commitment to making a difference!</p>
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}} Volunteer Team</p>
+</div>

@@ -1,0 +1,17 @@
+<div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+  <h2>Help Request Received</h2>
+  <p>Hello {{.Name}},</p>
+  <p>Thank you for submitting a help request with Lewisham Charity. We have received your request and will process it as soon as possible.</p>
+  <div style="background-color: #f3f4f6; padding: 15px; margin: 15px 0; border-radius: 5px;">
+    <p><strong>Reference Number:</strong> {{.Reference}}</p>
+    <p><strong>Request Category:</strong> {{.Category}}</p>
+    <p><strong>Current Status:</strong> {{.Status}}</p>
+    <p><strong>Preferred Visit Day:</strong> {{.VisitDay}}</p>
+    <p><strong>Preferred Time:</strong> {{.TimeSlot}}</p>
+  </div>
+  <p>Please keep your reference number handy for any future communication regarding this request.</p>
+  <p>If you have any questions or need to provide additional information, please contact us and include your reference number.</p>
+  <p>We will contact you within 24-48 hours to confirm your appointment.</p>
+  <p>Best regards,</p>
+  <p>{{.OrganizationName}}</p>
+</div>
