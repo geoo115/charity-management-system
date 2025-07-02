@@ -61,6 +61,7 @@ logs/
 api
 server
 main
+!cmd/api/main.go
 cmd/api/api
 cmd/server/server
 
