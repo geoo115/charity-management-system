@@ -1,21 +1,16 @@
 # Production Dockerfile for Lewisham Charity Hub
-FROM golang:1.24.4-alpine AS builder
+FROM golang:1.21-alpine AS builder
 
 # Install build dependencies
 RUN apk add --no-cache git ca-certificates tzdata
 
 WORKDIR /app
 
-# Copy go mod files
-COPY backend/go.mod backend/go.sum ./
-RUN go mod download
-
-# Copy source code
-COPY backend/ ./backend
-WORKDIR /app/backend
+# Copy everything at once
+COPY backend/ .
 
 # Build the application
-RUN CGO_ENABLED=0 GOOS=linux go build -o /app/main ./cmd/api/main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -o main cmd/api/main.go
 
 # Final stage
 FROM alpine:latest
@@ -25,10 +20,8 @@ RUN apk --no-cache add ca-certificates tzdata wget
 
 WORKDIR /app
 
-# Copy binary from builder stage
+# Copy binary and docs
 COPY --from=builder /app/main .
-
-# Copy any necessary config files
 COPY backend/docs ./docs/
 
 # Create a non-root user
