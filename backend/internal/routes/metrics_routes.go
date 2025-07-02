@@ -3,8 +3,8 @@ package routes
 import (
 	"net/http"
 
-	"github.com/geoo115/LDH/internal/observability"
-	"github.com/geoo115/LDH/internal/services"
+	"github.com/geoo115/charity-management-system/internal/observability"
+	"github.com/geoo115/charity-management-system/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

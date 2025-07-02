@@ -14,9 +14,9 @@ import (
 	"github.com/stripe/stripe-go/v74/refund"
 	"github.com/stripe/stripe-go/v74/webhook"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/utils"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/utils"
 )
 
 // PaymentIntentRequest represents the request for creating a payment intent

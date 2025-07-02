@@ -1,8 +1,8 @@
 package routes
 
 import (
-	systemHandlers "github.com/geoo115/LDH/internal/handlers_new/system"
-	"github.com/geoo115/LDH/internal/middleware"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

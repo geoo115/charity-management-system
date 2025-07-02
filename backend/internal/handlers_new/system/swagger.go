@@ -3,7 +3,7 @@ package system
 import (
 	"net/http"
 
-	"github.com/geoo115/LDH/docs"
+	"github.com/geoo115/charity-management-system/docs"
 
 	"github.com/gin-gonic/gin"
 )

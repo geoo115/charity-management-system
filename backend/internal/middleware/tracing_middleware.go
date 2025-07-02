@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/geoo115/LDH/internal/observability"
+	"github.com/geoo115/charity-management-system/internal/observability"
 	"github.com/gin-gonic/gin"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"

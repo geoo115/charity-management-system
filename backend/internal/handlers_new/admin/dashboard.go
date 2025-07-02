@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/geoo115/LDH/internal/handlers_new/shared"
-	"github.com/geoo115/LDH/internal/models"
+	"github.com/geoo115/charity-management-system/internal/handlers_new/shared"
+	"github.com/geoo115/charity-management-system/internal/models"
 	"github.com/gin-gonic/gin"
 )
 

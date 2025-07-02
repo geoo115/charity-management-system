@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/geoo115/LDH/internal/config"
+	"github.com/geoo115/charity-management-system/internal/config"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )

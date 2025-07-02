@@ -3,8 +3,8 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	donorHandlers "github.com/geoo115/LDH/internal/handlers_new/donor"
-	systemHandlers "github.com/geoo115/LDH/internal/handlers_new/system"
+	donorHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/donor"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"

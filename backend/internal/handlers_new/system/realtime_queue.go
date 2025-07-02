@@ -8,10 +8,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/utils"
-	"github.com/geoo115/LDH/internal/websocket"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/utils"
+	"github.com/geoo115/charity-management-system/internal/websocket"
 
 	"github.com/gin-gonic/gin"
 	gorilla "github.com/gorilla/websocket"

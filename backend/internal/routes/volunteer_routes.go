@@ -3,8 +3,8 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	volunteerHandlers "github.com/geoo115/LDH/internal/handlers_new/volunteer"
-	"github.com/geoo115/LDH/internal/middleware"
+	volunteerHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/volunteer"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 )
 
 // VolunteerRouteConfig defines configuration for volunteer routes

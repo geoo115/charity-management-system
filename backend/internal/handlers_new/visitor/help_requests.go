@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db" // Add this import
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/utils" // Add this import
+	"github.com/geoo115/charity-management-system/internal/db" // Add this import
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/utils" // Add this import
 
-	"github.com/geoo115/LDH/internal/notifications"
+	"github.com/geoo115/charity-management-system/internal/notifications"
 
-	"github.com/geoo115/LDH/internal/handlers_new/shared"
+	"github.com/geoo115/charity-management-system/internal/handlers_new/shared"
 	"github.com/gin-gonic/gin"
 )
 

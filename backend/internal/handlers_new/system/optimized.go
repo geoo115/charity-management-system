@@ -6,9 +6,9 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/services"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/services"
 
 	"github.com/gin-gonic/gin"
 )

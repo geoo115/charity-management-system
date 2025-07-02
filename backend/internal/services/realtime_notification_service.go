@@ -5,10 +5,10 @@ import (
 	"log"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/notifications"
-	"github.com/geoo115/LDH/internal/websocket"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/notifications"
+	"github.com/geoo115/charity-management-system/internal/websocket"
 )
 
 // RealtimeNotificationService handles sending notifications via multiple channels including WebSocket

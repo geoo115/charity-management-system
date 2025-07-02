@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
 
 	"github.com/gin-gonic/gin"
 )

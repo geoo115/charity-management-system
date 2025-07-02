@@ -8,15 +8,15 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/notifications"
-	"github.com/geoo115/LDH/internal/utils"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/notifications"
+	"github.com/geoo115/charity-management-system/internal/utils"
 
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"github.com/geoo115/LDH/internal/handlers_new/shared"
+	"github.com/geoo115/charity-management-system/internal/handlers_new/shared"
 )
 
 // ApproveVolunteer approves a volunteer application and creates a user account

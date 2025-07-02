@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
+	"github.com/geoo115/charity-management-system/internal/db"
 
 	"github.com/gin-gonic/gin"
 )

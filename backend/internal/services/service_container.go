@@ -5,8 +5,8 @@ import (
 	"log"
 	"sync"
 
-	"github.com/geoo115/LDH/internal/config"
-	"github.com/geoo115/LDH/internal/db"
+	"github.com/geoo115/charity-management-system/internal/config"
+	"github.com/geoo115/charity-management-system/internal/db"
 	"gorm.io/gorm"
 )
 

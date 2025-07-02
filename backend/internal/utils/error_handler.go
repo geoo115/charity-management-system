@@ -71,7 +71,7 @@ func getStackTrace(skip int) string {
 		fn := runtime.FuncForPC(pc)
 		if fn != nil {
 			// Only include our application code, skip standard library
-			if strings.Contains(file, "github.com/geoo115/LDH") {
+			if strings.Contains(file, "github.com/geoo115/charity-management-system") {
 				stack = append(stack, fmt.Sprintf("%s:%d %s", file, line, fn.Name()))
 			}
 		}

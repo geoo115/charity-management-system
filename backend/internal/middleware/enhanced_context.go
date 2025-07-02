@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/geoo115/LDH/internal/services"
+	"github.com/geoo115/charity-management-system/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

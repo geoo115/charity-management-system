@@ -6,7 +6,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/geoo115/LDH/internal/models"
+	"github.com/geoo115/charity-management-system/internal/models"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )

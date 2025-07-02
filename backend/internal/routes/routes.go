@@ -11,9 +11,9 @@ import (
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 
-	systemHandlers "github.com/geoo115/LDH/internal/handlers_new/system"
-	"github.com/geoo115/LDH/internal/middleware"
-	"github.com/geoo115/LDH/internal/services"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	"github.com/geoo115/charity-management-system/internal/middleware"
+	"github.com/geoo115/charity-management-system/internal/services"
 )
 
 // RouteSetupError represents errors during route setup

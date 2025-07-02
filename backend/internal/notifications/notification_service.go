@@ -14,8 +14,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/geoo115/LDH/internal/db"
-	"github.com/geoo115/LDH/internal/models"
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
 )
 
 // NotificationType represents the type of notification

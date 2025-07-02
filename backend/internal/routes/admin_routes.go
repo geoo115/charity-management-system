@@ -1,12 +1,12 @@
 package routes
 
 import (
-	adminHandlers "github.com/geoo115/LDH/internal/handlers_new/admin"
-	authHandlers "github.com/geoo115/LDH/internal/handlers_new/auth"
-	systemHandlers "github.com/geoo115/LDH/internal/handlers_new/system"
-	visitorHandlers "github.com/geoo115/LDH/internal/handlers_new/visitor"
-	volunteerHandlers "github.com/geoo115/LDH/internal/handlers_new/volunteer"
-	"github.com/geoo115/LDH/internal/middleware"
+	adminHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/admin"
+	authHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/auth"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	visitorHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/visitor"
+	volunteerHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/volunteer"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

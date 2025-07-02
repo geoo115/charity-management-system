@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geoo115/LDH/internal/models"
-	"github.com/geoo115/LDH/internal/notifications"
+	"github.com/geoo115/charity-management-system/internal/models"
+	"github.com/geoo115/charity-management-system/internal/notifications"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 )

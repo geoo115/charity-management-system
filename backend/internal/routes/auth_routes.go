@@ -5,8 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/geoo115/LDH/internal/handlers_new/auth"
-	"github.com/geoo115/LDH/internal/middleware"
+	"github.com/geoo115/charity-management-system/internal/handlers_new/auth"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 )
 
 // SetupAuthRoutes configures all authentication-related endpoints

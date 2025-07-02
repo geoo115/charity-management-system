@@ -3,8 +3,8 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	donorHandlers "github.com/geoo115/LDH/internal/handlers_new/donor"
-	"github.com/geoo115/LDH/internal/middleware"
+	donorHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/donor"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 )
 
 // SetupDonorRoutes configures all donation-related functionality

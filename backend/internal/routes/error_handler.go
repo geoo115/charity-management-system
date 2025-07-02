@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/geoo115/LDH/internal/utils"
+	"github.com/geoo115/charity-management-system/internal/utils"
 	"github.com/gin-gonic/gin"
 )
 

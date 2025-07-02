@@ -3,7 +3,7 @@ package routes
 import (
 	"time"
 
-	"github.com/geoo115/LDH/internal/middleware"
+	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
 

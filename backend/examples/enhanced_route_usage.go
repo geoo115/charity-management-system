@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/geoo115/LDH/internal/routes"
+	"github.com/geoo115/charity-management-system/internal/routes"
 	"github.com/gin-gonic/gin"
 )
 
