@@ -12,8 +12,8 @@ COPY backend/ .
 # Debug: show what we have
 RUN ls -la && echo "=== Go version ===" && go version && echo "=== Module info ===" && go mod download
 
-# Build the application with explicit flags
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o main cmd/api/main.go
+# Build the application with correct module path
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -ldflags="-w -s" -o main ./cmd/api
 
 # Final stage
 FROM alpine:latest
