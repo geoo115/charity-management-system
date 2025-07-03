@@ -42,10 +42,7 @@ services:
       - key: DB_SSLMODE
         value: require
       - key: REDIS_URL
-        fromService:
-          type: redis
-          name: lewisham-hub-redis
-          property: connectionString
+        value: redis://lewisham-hub-redis:6379
       - key: PORT
         value: "8080"
       - key: GIN_MODE
