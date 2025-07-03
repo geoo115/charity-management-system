@@ -1,4 +1,20 @@
 services:
+  # Frontend Next.js Service
+  - type: web
+    name: lewisham-charity-hub
+    env: node
+    region: oregon
+    buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
+    startCommand: cd frontend && npm start
+    healthCheckPath: /
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+        value: https://lewisham-charity-hub-api.onrender.com
+      - key: NODE_ENV
+        value: production
+
   # Backend API Service
   - type: web
     name: lewisham-charity-hub-api
