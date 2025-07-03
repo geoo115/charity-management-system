@@ -18,8 +18,10 @@ services:
   # Backend API Service
   - type: web
     name: lewisham-charity-hub-api
-    env: docker
-    dockerfilePath: ./Dockerfile.production
+    env: go
+    region: oregon
+    buildCommand: cd backend && go mod download && go mod verify && go build -ldflags="-w -s" -o main ./cmd/api
+    startCommand: cd backend && ./main
     healthCheckPath: /health
     plan: free
     envVars:
