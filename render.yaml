@@ -3,14 +3,11 @@ services:
   - type: web
     name: lewisham-charity-hub
     env: node
-    region: oregon
     buildCommand: cd frontend && npm install --legacy-peer-deps && npm run build
     startCommand: cd frontend && npm start
-    healthCheckPath: /
     plan: free
     envVars:
       - key: NEXT_PUBLIC_API_URL
-        sync: false
         value: https://lewisham-charity-hub-api.onrender.com
       - key: NODE_ENV
         value: production
@@ -18,11 +15,8 @@ services:
   # Backend API Service
   - type: web
     name: lewisham-charity-hub-api
-    env: go
-    region: oregon
-    buildCommand: cd backend && go mod download && go mod verify && go build -ldflags="-w -s" -o main ./cmd/api
-    startCommand: cd backend && ./main
-    healthCheckPath: /health
+    env: docker
+    dockerfilePath: ./Dockerfile.production
     plan: free
     envVars:
       - key: DB_HOST
@@ -45,7 +39,7 @@ services:
         fromDatabase:
           name: lewisham-hub-db
           property: database
-      - key: DB_SSL_MODE
+      - key: DB_SSLMODE
         value: require
       - key: REDIS_URL
         fromService:
@@ -53,7 +47,7 @@ services:
           name: lewisham-hub-redis
           property: connectionString
       - key: PORT
-        value: 8080
+        value: "8080"
       - key: GIN_MODE
         value: release
       - key: JWT_SECRET
@@ -65,7 +59,6 @@ services:
   - type: redis
     name: lewisham-hub-redis
     plan: free
-    ipAllowList: []
 
 databases:
   - name: lewisham-hub-db
