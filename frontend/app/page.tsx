@@ -106,7 +106,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
       {/* Enhanced Navigation */}
       <header className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-md dark:bg-gray-950/80">
         <div className="container flex h-16 items-center justify-between">
@@ -127,12 +127,21 @@ export default function HomePage() {
               <Link href="#impact" className="text-sm font-medium hover:text-primary transition-colors">
                 Our Impact
               </Link>
+              <Link href="/donate" className="text-sm font-medium hover:text-primary transition-colors">
+                Donate
+              </Link>
               <Link href="#contact" className="text-sm font-medium hover:text-primary transition-colors">
                 Contact
               </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
+            <Link href="/donate">
+              <Button variant="outline" className="hidden sm:inline-flex border-green-200 text-green-700 hover:bg-green-50">
+                <Heart className="h-4 w-4 mr-2 text-red-500" />
+                Donate
+              </Button>
+            </Link>
             <Link href="/login">
               <Button variant="ghost" className="hover:bg-primary/10">Login</Button>
             </Link>
@@ -172,6 +181,12 @@ export default function HomePage() {
                   <Button size="lg" className="w-full text-lg px-8 py-6 group-hover:scale-105 transition-transform">
                     Get Help Today
                     <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+                <Link href="/donate" className="group">
+                  <Button size="lg" variant="outline" className="w-full text-lg px-8 py-6 group-hover:scale-105 transition-transform bg-gradient-to-r from-green-50 to-blue-50 border-green-200 hover:from-green-100 hover:to-blue-100">
+                    Donate Now
+                    <Heart className="ml-2 h-5 w-5 group-hover:scale-110 transition-transform text-red-500" />
                   </Button>
                 </Link>
                 <Link href="/register?role=donor" className="group">
@@ -758,6 +773,19 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Floating Donate Button - Right Middle */}
+      <div className="fixed right-6 top-1/2 transform -translate-y-1/2 z-50">
+        <Link href="/donate" className="group">
+          <Button 
+            size="lg" 
+            className="h-16 w-16 rounded-full shadow-2xl bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 border-2 border-white group-hover:scale-110 transition-all duration-300 flex flex-col items-center justify-center p-2"
+          >
+            <Heart className="h-6 w-6 text-white group-hover:animate-pulse" />
+            <span className="text-xs text-white font-semibold mt-1">Donate</span>
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

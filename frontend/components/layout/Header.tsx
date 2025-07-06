@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { User, LogOut, Settings } from 'lucide-react';
+import { User, LogOut, Settings, Heart } from 'lucide-react';
 
 export const Header = () => {
   const { user, logout } = useAuth();
@@ -28,7 +28,7 @@ export const Header = () => {
         </div>
 
         <div className="ml-auto flex items-center space-x-4">
-          {user && (
+          {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -58,6 +58,16 @@ export const Header = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
+          ) : (
+            /* Show login/register buttons for non-authenticated users */
+            <div className="flex items-center space-x-2">
+              <Button asChild variant="ghost" size="sm">
+                <Link href="/login">Login</Link>
+              </Button>
+              <Button asChild variant="default" size="sm">
+                <Link href="/register">Register</Link>
+              </Button>
+            </div>
           )}
         </div>
       </div>
