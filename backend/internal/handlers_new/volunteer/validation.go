@@ -416,3 +416,101 @@ func scoreShiftsForVolunteer(shifts []models.Shift, volunteerApp models.Voluntee
 
 	return recommendations
 }
+
+// checkShiftEligibility performs basic shift eligibility checking
+func checkShiftEligibility(volunteerID uint, shift models.Shift) ShiftEligibilityResult {
+	// Check if shift is in the past (with 2-hour buffer)
+	cutoffTime := time.Now().Add(2 * time.Hour)
+	shiftStartTime := time.Date(shift.Date.Year(), shift.Date.Month(), shift.Date.Day(),
+		shift.StartTime.Hour(), shift.StartTime.Minute(), 0, 0, shift.Date.Location())
+
+	if shiftStartTime.Before(cutoffTime) {
+		return ShiftEligibilityResult{
+			Eligible: false,
+			Reason:   "Cannot sign up for shifts starting in less than 2 hours",
+			Suggestions: []string{
+				"Contact volunteer coordinator for emergency assignments",
+				"Look for shifts starting at least 2 hours from now",
+			},
+		}
+	}
+
+	// Check if shift is already assigned (for fixed shifts)
+	if shift.Type != "flexible" && shift.AssignedVolunteerID != nil {
+		return ShiftEligibilityResult{
+			Eligible: false,
+			Reason:   "Shift is already assigned to another volunteer",
+			Suggestions: []string{
+				"Look for other available shifts",
+				"Check back later for cancellations",
+			},
+		}
+	}
+
+	// Check for time conflicts with other assigned shifts
+	var conflicts []models.Shift
+	db.DB.Where("assigned_volunteer_id = ? AND date::date = ?::date", volunteerID, shift.Date).Find(&conflicts)
+
+	for _, existingShift := range conflicts {
+		if timeRangesOverlapSameDay(shift.StartTime, shift.EndTime, existingShift.StartTime, existingShift.EndTime) {
+			return ShiftEligibilityResult{
+				Eligible:  false,
+				Reason:    fmt.Sprintf("Time conflict with existing shift from %s to %s", existingShift.StartTime.Format("15:04"), existingShift.EndTime.Format("15:04")),
+				Conflicts: []models.Shift{existingShift},
+				Suggestions: []string{
+					"Choose a different time slot",
+					"Cancel your existing shift if this one is more important",
+					"Contact coordinator about overlapping assignments",
+				},
+			}
+		}
+	}
+
+	// For flexible shifts, check capacity
+	if shift.Type == "flexible" {
+		currentAssignments := countFlexibleAssignments(shift.ID)
+		if currentAssignments >= shift.FlexibleSlots {
+			return ShiftEligibilityResult{
+				Eligible: false,
+				Reason:   "Flexible shift is at full capacity",
+				Suggestions: []string{
+					"Check back later for cancellations",
+					"Look for other flexible shifts",
+				},
+			}
+		}
+	}
+
+	return ShiftEligibilityResult{
+		Eligible: true,
+	}
+}
+
+// ShiftEligibilityResult represents the result of basic eligibility checking
+type ShiftEligibilityResult struct {
+	Eligible    bool           `json:"eligible"`
+	Reason      string         `json:"reason,omitempty"`
+	Conflicts   []models.Shift `json:"conflicts,omitempty"`
+	Suggestions []string       `json:"suggestions,omitempty"`
+	ErrorCode   string         `json:"error_code,omitempty"`
+}
+
+// Helper function to check if time ranges overlap on the same day
+func timeRangesOverlapSameDay(start1, end1, start2, end2 time.Time) bool {
+	// Extract just the time components for comparison
+	time1Start := start1.Hour()*60 + start1.Minute()
+	time1End := end1.Hour()*60 + end1.Minute()
+	time2Start := start2.Hour()*60 + start2.Minute()
+	time2End := end2.Hour()*60 + end2.Minute()
+
+	return time1Start < time2End && time2Start < time1End
+}
+
+// Helper function to count flexible assignments
+func countFlexibleAssignments(shiftID uint) int {
+	var count int64
+	db.DB.Model(&models.ShiftAssignment{}).
+		Where("shift_id = ? AND status IN (?, ?)", shiftID, "Confirmed", "Assigned").
+		Count(&count)
+	return int(count)
+}

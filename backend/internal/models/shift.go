@@ -8,21 +8,33 @@ import (
 
 // Shift represents a volunteer shift
 type Shift struct {
-	ID                  uint           `gorm:"primaryKey" json:"id"`
-	Date                time.Time      `json:"date"`
-	StartTime           time.Time      `json:"start_time"`
-	EndTime             time.Time      `json:"end_time"`
-	Location            string         `json:"location"`
-	Description         string         `json:"description"`
-	Role                string         `json:"role"`
-	MaxVolunteers       int            `json:"max_volunteers" gorm:"default:1"`
-	RequiredSkills      string         `json:"required_skills"`
-	AssignedVolunteerID *uint          `json:"assigned_volunteer_id"`
-	Type                string         `json:"type"`       // e.g. "fixed", "flexible", "open"
-	OpenEnded           bool           `json:"open_ended"` // true if open-ended shift
-	CreatedAt           time.Time      `json:"created_at"`
-	UpdatedAt           time.Time      `json:"updated_at"`
-	DeletedAt           gorm.DeletedAt `gorm:"index" json:"-"`
+	ID                  uint      `gorm:"primaryKey" json:"id"`
+	Date                time.Time `json:"date"`
+	StartTime           time.Time `json:"start_time"`
+	EndTime             time.Time `json:"end_time"`
+	Location            string    `json:"location"`
+	Description         string    `json:"description"`
+	Role                string    `json:"role"`
+	MaxVolunteers       int       `json:"max_volunteers" gorm:"default:1"`
+	RequiredSkills      string    `json:"required_skills"`
+	AssignedVolunteerID *uint     `json:"assigned_volunteer_id"`
+	Type                string    `json:"type"`       // e.g. "fixed", "flexible", "open"
+	OpenEnded           bool      `json:"open_ended"` // true if open-ended shift
+	// Enhanced flexible shift support
+	MinimumHours      *float64 `json:"minimum_hours"`       // Minimum commitment for flexible shifts
+	MaximumHours      *float64 `json:"maximum_hours"`       // Maximum commitment for flexible shifts
+	FlexibleSlots     int      `json:"flexible_slots"`      // Number of flexible volunteer slots available
+	FlexibleSlotsUsed int      `json:"flexible_slots_used"` // Number of flexible slots taken
+	TimeSlotInterval  int      `json:"time_slot_interval"`  // Interval in minutes (default 30)
+	BreakDuration     int      `json:"break_duration"`      // Break between shifts in minutes
+	// Shift metadata
+	Priority           string         `json:"priority"`            // urgent, high, normal, low
+	Tags               string         `json:"tags"`                // JSON array of tags
+	Equipment          string         `json:"equipment"`           // Required equipment
+	AccessibilityNotes string         `json:"accessibility_notes"` // Accessibility information
+	CreatedAt          time.Time      `json:"created_at"`
+	UpdatedAt          time.Time      `json:"updated_at"`
+	DeletedAt          gorm.DeletedAt `gorm:"index" json:"-"`
 }
 
 // BeforeCreate hook to set CreatedAt and UpdatedAt

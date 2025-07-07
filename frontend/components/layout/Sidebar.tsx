@@ -186,7 +186,7 @@ const sidebarSections: SidebarSection[] = [
 
   // VOLUNTEER SECTIONS
   {
-    title: 'Overview',
+    title: 'Main',
     roles: ['Volunteer'],
     items: [
       {
@@ -194,76 +194,48 @@ const sidebarSections: SidebarSection[] = [
         href: '/volunteer',
         icon: Home,
         roles: ['Volunteer'],
-        description: 'Your volunteer overview'
+        description: 'Your volunteer overview',
+        isImportant: true
       },
       {
-        title: 'Profile',
+        title: 'My Profile',
         href: '/volunteer/profile',
         icon: User,
         roles: ['Volunteer'],
         description: 'Manage your profile'
-      },
-      {
-        title: 'Application Status',
-        href: '/volunteer/application-status',
-        icon: BadgeCheck,
-        roles: ['Volunteer'],
-        description: 'Check application status'
       }
     ]
   },
   {
-    title: 'Work & Performance',
+    title: 'Shifts & Schedule',
     roles: ['Volunteer'],
     items: [
       {
+        title: 'Available Shifts',
+        href: '/volunteer/shifts/available',
+        icon: Search,
+        roles: ['Volunteer'],
+        description: 'Find and sign up for shifts',
+        isImportant: true
+      },
+      {
         title: 'My Shifts',
-        href: '/volunteer/shifts',
+        href: '/volunteer/shifts/my-shifts',
         icon: Calendar,
         roles: ['Volunteer'],
-        description: 'View and manage shifts',
-        children: [
-          {
-            title: 'My Schedule',
-            href: '/volunteer/shifts',
-            icon: Calendar,
-            roles: ['Volunteer'],
-            description: 'View your scheduled shifts'
-          },
-          {
-            title: 'Available Shifts',
-            href: '/volunteer/shifts/available',
-            icon: PlusCircle,
-            roles: ['Volunteer'],
-            description: 'Browse and sign up for shifts'
-          },
-          {
-            title: 'Shift History',
-            href: '/volunteer/shifts/history',
-            icon: Clock,
-            roles: ['Volunteer'],
-            description: 'View past shifts and hours'
-          }
-        ]
+        description: 'View your scheduled shifts'
       },
       {
-        title: 'Performance',
-        href: '/volunteer/performance',
-        icon: TrendingUp,
+        title: 'Shift Overview',
+        href: '/volunteer/shifts',
+        icon: Clock,
         roles: ['Volunteer'],
-        description: 'View your performance metrics'
-      },
-      {
-        title: 'Achievements',
-        href: '/volunteer/achievements',
-        icon: Award,
-        roles: ['Volunteer'],
-        description: 'View badges and achievements'
+        description: 'All shift management'
       }
     ]
   },
   {
-    title: 'Service Operations',
+    title: 'Daily Tasks',
     roles: ['Volunteer'],
     items: [
       {
@@ -276,7 +248,7 @@ const sidebarSections: SidebarSection[] = [
       {
         title: 'Queue Management',
         href: '/volunteer/queue',
-        icon: Clock,
+        icon: Users,
         roles: ['Volunteer'],
         description: 'Manage service queues'
       },
@@ -285,96 +257,35 @@ const sidebarSections: SidebarSection[] = [
         href: '/volunteer/notifications',
         icon: Bell,
         roles: ['Volunteer'],
-        description: 'View important updates'
+        description: 'Important updates',
+        badge: 3
       }
     ]
   },
   {
-    title: 'Training & Development',
+    title: 'Progress & Growth',
     roles: ['Volunteer'],
     items: [
       {
-        title: 'Training Hub',
-        href: '/volunteer/training',
-        icon: BookOpen,
+        title: 'Performance',
+        href: '/volunteer/performance',
+        icon: TrendingUp,
         roles: ['Volunteer'],
-        description: 'Access training materials'
+        description: 'Track your impact'
       },
       {
-        title: 'Certifications',
-        href: '/volunteer/certifications',
-        icon: BadgeCheck,
-        roles: ['Volunteer'],
-        description: 'View your certifications'
-      },
-      {
-        title: 'Skill Development',
-        href: '/volunteer/skills',
-        icon: Target,
-        roles: ['Volunteer'],
-        description: 'Track skill development'
-      }
-    ]
-  },
-  {
-    title: 'Team & Leadership',
-    roles: ['Volunteer'],
-    items: [
-      {
-        title: 'Team Management',
+        title: 'Team',
         href: '/volunteer/team',
         icon: Users,
         roles: ['Volunteer'],
-        description: 'Manage your volunteer team',
-        isNew: true
+        description: 'Collaborate with team'
       },
       {
-        title: 'Team Communication',
-        href: '/volunteer/team/communication',
-        icon: MessageSquare,
+        title: 'Application Status',
+        href: '/volunteer/application-status',
+        icon: BadgeCheck,
         roles: ['Volunteer'],
-        description: 'Team chat and messaging'
-      },
-      {
-        title: 'Team Analytics',
-        href: '/volunteer/team/analytics',
-        icon: BarChart3,
-        roles: ['Volunteer'],
-        description: 'Team performance analytics'
-      },
-      {
-        title: 'Meeting Scheduler',
-        href: '/volunteer/team/meetings',
-        icon: Calendar,
-        roles: ['Volunteer'],
-        description: 'Schedule team meetings'
-      }
-    ]
-  },
-  {
-    title: 'Emergency & Special',
-    roles: ['Volunteer'],
-    items: [
-      {
-        title: 'Emergency Response',
-        href: '/volunteer/emergency',
-        icon: Shield,
-        roles: ['Volunteer'],
-        description: 'Emergency response tools'
-      },
-      {
-        title: 'Special Events',
-        href: '/volunteer/events',
-        icon: Star,
-        roles: ['Volunteer'],
-        description: 'Special event volunteering'
-      },
-      {
-        title: 'Flexible Shifts',
-        href: '/volunteer/flexible-shifts',
-        icon: Clock,
-        roles: ['Volunteer'],
-        description: 'On-demand shift opportunities'
+        description: 'Check status'
       }
     ]
   },
@@ -773,13 +684,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
       <div key={item.href}>
         <div
           className={cn(
-            'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all cursor-pointer group',
+            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-all cursor-pointer group',
             isChild ? 'ml-4 pl-6' : '',
             isActive 
-              ? 'bg-primary text-primary-foreground shadow-sm' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted/50',
-            item.isImportant && !isActive && 'text-orange-600 dark:text-orange-400',
-            isChild && 'text-xs'
+              ? 'bg-primary text-primary-foreground shadow-sm font-medium' 
+              : 'text-muted-foreground hover:text-foreground hover:bg-muted/70',
+            item.isImportant && !isActive && 'text-blue-600 dark:text-blue-400 font-medium',
+            isChild && 'text-xs py-2'
           )}
           onClick={hasChildren ? () => toggleItem(item.href) : undefined}
         >
@@ -788,12 +699,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
               <Icon className={cn('h-4 w-4 flex-shrink-0', isChild && 'h-3 w-3')} />
               <span className="flex-1 font-medium">{item.title}</span>
               {item.badge && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className={cn(
+                  'text-xs h-5 min-w-5 flex items-center justify-center',
+                  typeof item.badge === 'number' && item.badge > 0 && 'bg-red-500 text-white'
+                )}>
                   {item.badge}
                 </Badge>
               )}
               {item.isNew && (
-                <Badge variant="default" className="text-xs bg-green-500">
+                <Badge variant="default" className="text-xs bg-green-500 text-white">
                   New
                 </Badge>
               )}
@@ -812,17 +726,20 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
               <Icon className={cn('h-4 w-4 flex-shrink-0', isChild && 'h-3 w-3')} />
               <span className="flex-1 font-medium">{item.title}</span>
               {item.badge && (
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className={cn(
+                  'text-xs h-5 min-w-5 flex items-center justify-center',
+                  typeof item.badge === 'number' && item.badge > 0 && 'bg-red-500 text-white'
+                )}>
                   {item.badge}
                 </Badge>
               )}
               {item.isNew && (
-                <Badge variant="default" className="text-xs bg-green-500">
+                <Badge variant="default" className="text-xs bg-green-500 text-white">
                   New
                 </Badge>
               )}
               {item.isImportant && (
-                <Star className="h-3 w-3 text-yellow-500 fill-current" />
+                <Star className="h-3 w-3 text-blue-500 fill-current" />
               )}
             </Link>
           )}
@@ -903,32 +820,17 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
               <Badge className={cn('text-xs', getRoleBadgeColor(user.role))}>
                 {user.role}
               </Badge>
-              {/* Volunteer-specific badges */}
+              {/* Volunteer-specific badges - simplified */}
               {user.role === 'Volunteer' && (
                 <>
                   {user.volunteerLevel && (
-                    <Badge variant="outline" className="text-xs bg-gradient-to-r from-green-100 to-blue-100 text-green-800 border-green-300">
+                    <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">
                       {user.volunteerLevel}
                     </Badge>
                   )}
-                  {user.specializations && user.specializations.length > 0 && (
-                    <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800 border-purple-300">
-                      {user.specializations.length} Specializations
-                    </Badge>
-                  )}
-                  {user.canTrain && (
-                    <Badge variant="outline" className="text-xs bg-blue-100 text-blue-800 border-blue-300">
-                      🎓 Trainer
-                    </Badge>
-                  )}
                   {user.canManageShifts && (
-                    <Badge variant="outline" className="text-xs bg-purple-100 text-purple-800 border-purple-300">
-                      📅 Shift Manager
-                    </Badge>
-                  )}
-                  {user.emergencyCertified && (
-                    <Badge variant="outline" className="text-xs bg-red-100 text-red-800 border-red-300">
-                      🛡️ Emergency
+                    <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700 border-blue-200">
+                      Manager
                     </Badge>
                   )}
                 </>
@@ -964,22 +866,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
                 </>
               )}
             </div>
-            {/* Volunteer team information */}
+            {/* Volunteer team information - simplified */}
             {user.role === 'Volunteer' && user.teamInfo && (
               <div className="text-xs text-muted-foreground mt-1">
-                Team: {user.teamInfo.name} ({user.teamInfo.memberCount} members)
+                Team: {user.teamInfo.name}
               </div>
             )}
-            {/* Admin system information */}
-            {user.role === 'Admin' && (
-              <div className="text-xs text-muted-foreground mt-1">
-                System: {user.lastLogin ? `Last login ${new Date(user.lastLogin).toLocaleDateString()}` : 'Active'}
-              </div>
-            )}
-            {/* Status indicator */}
+            {/* Status indicator - simplified */}
             <div className="flex items-center gap-1 mt-1">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-muted-foreground">Active</span>
+              <span className="text-xs text-muted-foreground">Online</span>
             </div>
           </div>
         </div>
@@ -1004,11 +900,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
             const isExpanded = expandedSections[section.title];
             
             return (
-              <div key={section.title}>
+              <div key={section.title} className="mb-4">
                 {section.collapsible !== false && (
                   <button
                     onClick={() => toggleSection(section.title)}
-                    className="flex items-center gap-2 w-full px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors"
+                    className={cn(
+                      "flex items-center gap-2 w-full px-3 py-2 text-xs font-semibold uppercase tracking-wide rounded-md transition-all hover:bg-muted/50",
+                      user.role === 'Volunteer' ? 'text-blue-600 dark:text-blue-400' : 'text-muted-foreground'
+                    )}
                   >
                     {isExpanded ? (
                       <ChevronDown className="h-3 w-3" />
@@ -1020,7 +919,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
                 )}
                 
                 {isExpanded && (
-                  <div className="space-y-1 mt-2">
+                  <div className="space-y-1 mt-2 ml-1">
                     {section.items.map(item => renderNavItem(item))}
                   </div>
                 )}
@@ -1067,34 +966,24 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
           )}
           
           {user.role === 'Volunteer' && (
-            <>
+            <div className="space-y-2">
               <Link
                 href="/volunteer/shifts/available"
                 className="flex items-center gap-2 px-3 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
                 onClick={() => setOpen?.(false)}
               >
-                <PlusCircle className="h-4 w-4" />
+                <Search className="h-4 w-4" />
                 Find Shifts
               </Link>
               <Link
                 href="/volunteer/check-in"
-                className="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-muted/50 transition-colors"
+                className="flex items-center gap-2 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
                 onClick={() => setOpen?.(false)}
               >
                 <UserCheck className="h-4 w-4" />
                 Check-in Visitors
               </Link>
-              {user.canManageShifts && (
-                <Link
-                  href="/volunteer/team"
-                  className="flex items-center gap-2 px-3 py-2 text-sm border rounded-lg hover:bg-muted/50 transition-colors"
-                  onClick={() => setOpen?.(false)}
-                >
-                  <Users className="h-4 w-4" />
-                  Manage Team
-                </Link>
-              )}
-            </>
+            </div>
           )}
           
           {user.role === 'Admin' && (

@@ -562,20 +562,6 @@ func (mm *MigrationManager) CleanDropAllTables(db *gorm.DB) error {
 	return nil
 }
 
-// createIndexes creates performance indexes
-func (mm *MigrationManager) createIndexes(db *gorm.DB) error {
-	return createIndexes(db)
-}
-
-// dropIndexes drops all custom indexes (rollback function)
-func (mm *MigrationManager) dropIndexes(db *gorm.DB) error {
-	mm.logger.Println("Dropping custom indexes...")
-	// Implementation would drop custom indexes
-	// For now, we'll just log as indexes are automatically dropped with tables
-	mm.logger.Println("Custom indexes will be dropped with tables")
-	return nil
-}
-
 // migrateVolunteerRoleFields adds the new volunteer role hierarchy fields to existing database
 func migrateVolunteerRoleFields(db *gorm.DB) error {
 	log.Println("Starting volunteer role hierarchy migration...")

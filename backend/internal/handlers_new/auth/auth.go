@@ -1105,10 +1105,10 @@ func GetCurrentUser(c *gin.Context) {
 	case models.RoleVolunteer:
 		// Get volunteer application status if exists
 		var volunteerApp models.VolunteerApplication
-		if err := db.DB.Where("user_id = ?", user.ID).First(&volunteerApp).Error; err == nil {
+		if err := db.DB.Where("email = ?", user.Email).First(&volunteerApp).Error; err == nil {
 			response["volunteer_status"] = gin.H{
 				"application_status": volunteerApp.Status,
-				"approved_at":        volunteerApp.CreatedAt, // Use CreatedAt instead of ApprovedAt
+				"approved_at":        volunteerApp.ApprovedAt,
 				"skills":             volunteerApp.Skills,
 				"availability":       volunteerApp.Availability,
 			}

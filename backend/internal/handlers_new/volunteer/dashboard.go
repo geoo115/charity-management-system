@@ -85,12 +85,60 @@ func GetAssignedShifts(c *gin.Context) {
 		return
 	}
 
-	var shifts []models.Shift
+	var result []gin.H
+
+	// Get fixed shifts where volunteer is directly assigned
+	var fixedShifts []models.Shift
 	db.DB.Where("assigned_volunteer_id = ? AND date >= ?", userID, time.Now()).
 		Order("date ASC").
-		Find(&shifts)
+		Find(&fixedShifts)
 
-	c.JSON(http.StatusOK, shifts)
+	// Add fixed shifts to result
+	for _, shift := range fixedShifts {
+		result = append(result, gin.H{
+			"id":                shift.ID,
+			"date":              shift.Date,
+			"start_time":        shift.StartTime,
+			"end_time":          shift.EndTime,
+			"location":          shift.Location,
+			"description":       shift.Description,
+			"role":              shift.Role,
+			"type":              shift.Type,
+			"status":            "Confirmed",
+			"custom_start_time": nil,
+			"custom_end_time":   nil,
+			"duration":          0,
+		})
+	}
+
+	// Get flexible shifts through ShiftAssignment records
+	var assignments []models.ShiftAssignment
+	db.DB.Where("user_id = ? AND status = ?", userID, "Confirmed").
+		Preload("Shift").
+		Find(&assignments)
+
+	// Add flexible shifts to result
+	for _, assignment := range assignments {
+		// Only include if shift date is in the future
+		if assignment.Shift.Date.After(time.Now()) {
+			result = append(result, gin.H{
+				"id":                assignment.Shift.ID,
+				"date":              assignment.Shift.Date,
+				"start_time":        assignment.Shift.StartTime,
+				"end_time":          assignment.Shift.EndTime,
+				"location":          assignment.Shift.Location,
+				"description":       assignment.Shift.Description,
+				"role":              assignment.Shift.Role,
+				"type":              assignment.Shift.Type,
+				"status":            assignment.Status,
+				"custom_start_time": assignment.CustomStartTime,
+				"custom_end_time":   assignment.CustomEndTime,
+				"duration":          assignment.Duration,
+			})
+		}
+	}
+
+	c.JSON(http.StatusOK, result)
 }
 
 // GetShiftHistory returns shift history for the volunteer

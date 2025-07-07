@@ -81,6 +81,10 @@ func setupVolunteerCore(group *gin.RouterGroup) {
 	group.GET("/dashboard", volunteerHandlers.VolunteerDashboardStats)
 	group.GET("/dashboard/stats", volunteerHandlers.VolunteerDashboardStats)
 
+	// Activity and achievements
+	group.GET("/activity", volunteerHandlers.GetVolunteerActivity)
+	group.GET("/achievements", volunteerHandlers.GetVolunteerAchievements)
+
 	// Role management
 	group.GET("/role/info", volunteerHandlers.GetVolunteerRoleInfo)
 	group.GET("/role/permissions", volunteerHandlers.GetVolunteerRoleInfo)
@@ -168,6 +172,7 @@ func setupVolunteerShiftManagement(group *gin.RouterGroup) {
 		shiftGroup.GET("/available", volunteerHandlers.ListAvailableShifts)
 		shiftGroup.GET("/role-specific", volunteerHandlers.GetRoleSpecificShifts)
 		shiftGroup.GET("/assigned", volunteerHandlers.GetAssignedShifts)
+		shiftGroup.GET("/my-shifts", volunteerHandlers.GetAssignedShifts) // Alias for assigned shifts
 		shiftGroup.GET("/history", volunteerHandlers.GetShiftHistory)
 
 		// Shift actions
@@ -180,5 +185,11 @@ func setupVolunteerShiftManagement(group *gin.RouterGroup) {
 
 		// Shift recommendations
 		shiftGroup.GET("/recommendations", volunteerHandlers.GetShiftRecommendations)
+
+		// Flexible shift specific endpoints
+		shiftGroup.POST("/flexible", volunteerHandlers.CreateFlexibleShift)
+		shiftGroup.GET("/:id/capacity", volunteerHandlers.GetFlexibleShiftCapacity)
+		shiftGroup.GET("/:id/time-slots", volunteerHandlers.GetFlexibleShiftTimeSlots)
+		shiftGroup.PUT("/:id/capacity", volunteerHandlers.UpdateFlexibleShiftCapacity)
 	}
 }

@@ -196,7 +196,7 @@ const navigationConfig: NavigationSection[] = [
       {
         id: 'volunteer-shifts',
         title: 'My Shifts',
-        href: '/volunteer/shifts',
+        href: '/volunteer/shifts/my-shifts',
         icon: Calendar,
         roles: ['Volunteer'],
         description: 'View and manage shifts',

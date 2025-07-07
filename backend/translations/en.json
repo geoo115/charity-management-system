@@ -1,0 +1,15 @@
+{
+		"welcome": "Welcome to Lewisham Charity",
+		"login": "Log in",
+		"register": "Register",
+		"help_request": "Request Help",
+		"donate": "Donate",
+		"volunteer": "Volunteer",
+		"admin": "Administration",
+		"dashboard": "Dashboard",
+		"profile": "Profile",
+		"settings": "Settings",
+		"notifications": "Notifications",
+		"queue": "Queue",
+		"documents": "Documents"
+	}

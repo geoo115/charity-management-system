@@ -110,12 +110,27 @@ export default function FlexibleTimePicker({
       const durationMinutes = endTotalMinutes - startTotalMinutes;
       const durationHours = durationMinutes / 60;
       
+      // Enhanced validation with specific error messages
       if (durationHours < minimumHours) {
-        setError(`Minimum commitment is ${minimumHours} hours`);
+        setError(`Minimum commitment is ${minimumHours} hour${minimumHours !== 1 ? 's' : ''} for this shift`);
       } else if (durationHours > maximumHours) {
-        setError(`Maximum commitment is ${maximumHours} hours`);
+        setError(`Maximum commitment is ${maximumHours} hour${maximumHours !== 1 ? 's' : ''} for this shift`);
+      } else if (durationMinutes % 30 !== 0) {
+        setError('Please select times in 30-minute intervals');
       } else {
-        setError('');
+        // Check for break time requirements
+        const breakBuffer = 15; // 15 minutes before/after for transition
+        const effectiveStart = startTotalMinutes - breakBuffer;
+        const effectiveEnd = endTotalMinutes + breakBuffer;
+        
+        // Additional validation for peak hours or specific shift requirements
+        const constraints = getTimeConstraints();
+        if (constraints.shiftDurationHours >= 6 && durationHours >= 4) {
+          // Suggest break for longer commitments
+          setError('');
+        } else {
+          setError('');
+        }
       }
       
       setDuration(durationHours);
@@ -167,45 +182,79 @@ export default function FlexibleTimePicker({
     }
   };
 
+  // Enhanced time constraints with better validation
+  const getTimeConstraints = () => {
+    const shiftDurationHours = calculateShiftDuration(availableTimeRange.start, availableTimeRange.end);
+    
+    // Use shift-specific constraints if available
+    const minimumHoursFromProps = minimumHours || Math.max(1, Math.floor(shiftDurationHours * 0.25));
+    const maximumHoursFromProps = maximumHours || shiftDurationHours;
+    
+    return {
+      minimumHours: minimumHoursFromProps,
+      maximumHours: maximumHoursFromProps,
+      shiftDurationHours,
+      recommendedHours: Math.min(4, maximumHoursFromProps), // Suggest 4 hours as default
+    };
+  };
+
+  const calculateShiftDuration = (startTime: string, endTime: string) => {
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(':').map(Number);
+    
+    const startTotalMinutes = startHour * 60 + startMinute;
+    const endTotalMinutes = endHour * 60 + endMinute;
+    
+    return (endTotalMinutes - startTotalMinutes) / 60;
+  };
+
+  // Enhanced quick selections with better time recommendations
   const getQuickSelections = () => {
     const selections = [];
+    const constraints = getTimeConstraints();
     
-    // Generate common time blocks
+    // Generate smart time blocks based on shift length and typical patterns
     const commonBlocks = [
-      { hours: 2, label: '2 hours' },
-      { hours: 3, label: '3 hours' },
-      { hours: 4, label: '4 hours' },
-      { hours: 6, label: '6 hours' },
-      { hours: 8, label: '8 hours' }
-    ].filter(block => block.hours >= minimumHours && block.hours <= maximumHours);
-    
+      { hours: 2, label: '2 hours', priority: 1 },
+      { hours: 3, label: '3 hours', priority: 2 },
+      { hours: 4, label: '4 hours', priority: 3 },
+      { hours: 6, label: '6 hours', priority: 4 },
+      { hours: 8, label: '8 hours', priority: 5 }
+    ].filter(block => block.hours >= minimumHours && block.hours <= maximumHours)
+     .sort((a, b) => a.priority - b.priority);
+
     const [rangeStartHour] = availableTimeRange.start.split(':').map(Number);
     const [rangeEndHour] = availableTimeRange.end.split(':').map(Number);
     
-    for (const block of commonBlocks) {
-      // Morning slot
-      if (rangeStartHour + block.hours <= rangeEndHour) {
+    for (const block of commonBlocks.slice(0, 6)) { // Limit to 6 options
+      // Morning slot (9 AM start or shift start)
+      const morningStart = Math.max(9, rangeStartHour);
+      if (morningStart + block.hours <= rangeEndHour) {
         selections.push({
           label: `Morning ${block.label}`,
-          startTime: `${rangeStartHour.toString().padStart(2, '0')}:00`,
-          endTime: `${(rangeStartHour + block.hours).toString().padStart(2, '0')}:00`,
-          duration: block.hours
+          subtitle: `${morningStart}:00 - ${morningStart + block.hours}:00`,
+          startTime: `${morningStart.toString().padStart(2, '0')}:00`,
+          endTime: `${(morningStart + block.hours).toString().padStart(2, '0')}:00`,
+          duration: block.hours,
+          recommended: block.hours === constraints.recommendedHours
         });
       }
       
-      // Afternoon slot (if possible)
-      const afternoonStart = Math.max(12, rangeStartHour);
-      if (afternoonStart + block.hours <= rangeEndHour) {
+      // Afternoon slot (1 PM start if possible)
+      const afternoonStart = Math.max(13, rangeStartHour);
+      if (afternoonStart + block.hours <= rangeEndHour && afternoonStart !== morningStart) {
         selections.push({
           label: `Afternoon ${block.label}`,
+          subtitle: `${afternoonStart}:00 - ${afternoonStart + block.hours}:00`,
           startTime: `${afternoonStart.toString().padStart(2, '0')}:00`,
           endTime: `${(afternoonStart + block.hours).toString().padStart(2, '0')}:00`,
-          duration: block.hours
+          duration: block.hours,
+          recommended: block.hours === constraints.recommendedHours
         });
       }
     }
     
-    return selections.slice(0, 4); // Limit to 4 quick selections
+    return selections.slice(0, 6); // Maximum 6 quick selections
   };
 
   const quickSelections = getQuickSelections();

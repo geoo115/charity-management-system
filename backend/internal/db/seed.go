@@ -57,8 +57,417 @@ func SeedDatabase(db *gorm.DB) error {
 		return fmt.Errorf("failed to seed documents: %w", err)
 	}
 
+	if err := seedShifts(db); err != nil {
+		return fmt.Errorf("failed to seed shifts: %w", err)
+	}
+
+	if err := seedShiftAssignments(db); err != nil {
+		return fmt.Errorf("failed to seed shift assignments: %w", err)
+	}
+
+	if err := seedSystemConfig(db); err != nil {
+		return fmt.Errorf("failed to seed system config: %w", err)
+	}
+
+	if err := seedAuditLogs(db); err != nil {
+		return fmt.Errorf("failed to seed audit logs: %w", err)
+	}
+
 	log.Println("Database seeding completed successfully!")
 	return nil
+}
+
+// seedShifts creates diverse shifts including flexible shifts for testing
+func seedShifts(db *gorm.DB) error {
+	// Check if shifts already exist
+	var count int64
+	if err := db.Model(&models.Shift{}).Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		log.Println("Shifts already exist, skipping")
+		return nil
+	}
+
+	var shifts []models.Shift
+	locations := []string{
+		"Main Community Center",
+		"Food Bank Warehouse",
+		"Administrative Office",
+		"Mobile Unit",
+		"Community Kitchen",
+	}
+	roles := []string{
+		"Food Distribution",
+		"Administrative Support",
+		"Community Outreach",
+		"Event Coordination",
+		"Reception and Check-in",
+	}
+	shiftTypes := []string{"fixed", "flexible", "open"}
+
+	// Create shifts for the next 30 days
+	for day := 1; day <= 30; day++ {
+		shiftDate := time.Now().AddDate(0, 0, day)
+
+		// Skip some days to create realistic availability
+		if day%7 == 0 { // Skip every 7th day (Sundays)
+			continue
+		}
+
+		// Create 2-4 shifts per day
+		shiftsPerDay := rand.Intn(3) + 2
+		for i := 0; i < shiftsPerDay; i++ {
+			location := locations[rand.Intn(len(locations))]
+			role := roles[rand.Intn(len(roles))]
+			shiftType := shiftTypes[rand.Intn(len(shiftTypes))]
+
+			// Different time slots
+			var startHour, endHour int
+			switch i {
+			case 0: // Morning shift
+				startHour, endHour = 9, 13
+			case 1: // Afternoon shift
+				startHour, endHour = 13, 17
+			case 2: // Evening shift
+				startHour, endHour = 17, 20
+			default: // Extended shift
+				startHour, endHour = 10, 16
+			}
+
+			startTime := time.Date(2000, 1, 1, startHour, 0, 0, 0, time.UTC)
+			endTime := time.Date(2000, 1, 1, endHour, 0, 0, 0, time.UTC)
+
+			// For flexible shifts, set additional metadata
+			var minimumHours, maximumHours *float64
+			var flexibleSlots int
+			maxVolunteers := rand.Intn(3) + 1 // 1-3 volunteers
+
+			if shiftType == "flexible" {
+				minHours := float64(2)
+				maxHours := float64(endHour - startHour)
+				minimumHours = &minHours
+				maximumHours = &maxHours
+				flexibleSlots = rand.Intn(5) + 3 // 3-7 flexible slots
+			}
+
+			shift := models.Shift{
+				Date:              shiftDate,
+				StartTime:         startTime,
+				EndTime:           endTime,
+				Location:          location,
+				Description:       getShiftDescription(role, shiftType),
+				Role:              role,
+				MaxVolunteers:     maxVolunteers,
+				RequiredSkills:    getRequiredSkills(role),
+				Type:              shiftType,
+				OpenEnded:         rand.Float32() < 0.2, // 20% open-ended
+				MinimumHours:      minimumHours,
+				MaximumHours:      maximumHours,
+				FlexibleSlots:     flexibleSlots,
+				FlexibleSlotsUsed: 0,
+				TimeSlotInterval:  30, // 30-minute intervals
+				Priority:          getRandomPriority(),
+				Equipment:         getRequiredEquipment(role),
+				CreatedAt:         time.Now().AddDate(0, 0, -rand.Intn(7)),
+				UpdatedAt:         time.Now(),
+			}
+
+			shifts = append(shifts, shift)
+		}
+	}
+
+	if err := db.Create(&shifts).Error; err != nil {
+		return fmt.Errorf("failed to create shifts: %w", err)
+	}
+
+	log.Printf("Created %d shifts including flexible shifts", len(shifts))
+	return nil
+}
+
+// seedShiftAssignments creates volunteer assignments to shifts
+func seedShiftAssignments(db *gorm.DB) error {
+	// Check if assignments already exist
+	var count int64
+	if err := db.Model(&models.ShiftAssignment{}).Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		log.Println("Shift assignments already exist, skipping")
+		return nil
+	}
+
+	// Get active volunteers
+	var volunteers []models.User
+	if err := db.Where("role = ? AND status = ?", models.RoleVolunteer, models.StatusActive).Find(&volunteers).Error; err != nil {
+		return err
+	}
+
+	// Get available shifts
+	var shifts []models.Shift
+	if err := db.Where("date >= ?", time.Now()).Find(&shifts).Error; err != nil {
+		return err
+	}
+
+	if len(volunteers) == 0 || len(shifts) == 0 {
+		log.Println("No volunteers or shifts found, skipping shift assignments")
+		return nil
+	}
+
+	var assignments []models.ShiftAssignment
+	statuses := []string{"Confirmed", "Completed", "Cancelled", "NoShow"}
+
+	// Assign some shifts to volunteers (about 40% of shifts)
+	for _, shift := range shifts {
+		if rand.Float32() > 0.4 { // Skip 60% of shifts (leave them unassigned)
+			continue
+		}
+
+		volunteer := volunteers[rand.Intn(len(volunteers))]
+		status := statuses[0] // Most are "Confirmed"
+
+		// Some past shifts have different statuses
+		if shift.Date.Before(time.Now()) {
+			if rand.Float32() < 0.8 {
+				status = "Completed"
+			} else if rand.Float32() < 0.15 {
+				status = "NoShow"
+			} else {
+				status = "Cancelled"
+			}
+		}
+
+		assignment := models.ShiftAssignment{
+			ShiftID:    shift.ID,
+			UserID:     volunteer.ID,
+			Status:     status,
+			AssignedAt: time.Now().AddDate(0, 0, -rand.Intn(14)), // Assigned up to 2 weeks ago
+		}
+
+		// For flexible shifts, add custom times
+		if shift.Type == "flexible" && rand.Float32() < 0.7 { // 70% of flexible assignments have custom times
+			customStart := shift.StartTime.Add(time.Duration(rand.Intn(120)) * time.Minute) // 0-2 hours after start
+			duration := 2 + rand.Float64()*3                                                // 2-5 hours
+			customEnd := customStart.Add(time.Duration(duration * float64(time.Hour)))
+
+			// Make sure custom end doesn't exceed shift end
+			if customEnd.After(shift.EndTime) {
+				customEnd = shift.EndTime
+				duration = customEnd.Sub(customStart).Hours()
+			}
+
+			assignment.CustomStartTime = &customStart
+			assignment.CustomEndTime = &customEnd
+			assignment.Duration = duration
+		}
+
+		// Add check-in/out times for completed shifts
+		if status == "Completed" {
+			checkInTime := shift.Date.Add(time.Duration(shift.StartTime.Hour()) * time.Hour)
+			checkOutDuration := shift.EndTime.Sub(shift.StartTime)
+			checkOutTime := checkInTime.Add(checkOutDuration)
+
+			assignment.CheckedInAt = &checkInTime
+			assignment.CheckedOutAt = &checkOutTime
+			assignment.HoursLogged = checkOutDuration.Hours()
+		}
+
+		assignments = append(assignments, assignment)
+	}
+
+	if len(assignments) > 0 {
+		if err := db.Create(&assignments).Error; err != nil {
+			return fmt.Errorf("failed to create shift assignments: %w", err)
+		}
+		log.Printf("Created %d shift assignments", len(assignments))
+	}
+
+	return nil
+}
+
+// seedSystemConfig creates system configuration entries
+func seedSystemConfig(db *gorm.DB) error {
+	// Check if config already exists
+	var count int64
+	if err := db.Model(&models.SystemConfig{}).Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		log.Println("System config already exists, skipping")
+		return nil
+	}
+
+	configs := []models.SystemConfig{
+		{
+			Key:         "shift_signup_advance_hours",
+			Value:       "2",
+			Type:        "int",
+			Description: "Minimum hours in advance required for shift signup",
+			IsPublic:    false,
+		},
+		{
+			Key:         "max_shifts_per_volunteer",
+			Value:       "3",
+			Type:        "int",
+			Description: "Maximum concurrent shifts per volunteer",
+			IsPublic:    false,
+		},
+		{
+			Key:         "flexible_shift_interval_minutes",
+			Value:       "30",
+			Type:        "int",
+			Description: "Time slot interval for flexible shifts in minutes",
+			IsPublic:    true,
+		},
+		{
+			Key:         "volunteer_cancellation_notice_hours",
+			Value:       "24",
+			Type:        "int",
+			Description: "Required notice hours for volunteer shift cancellation",
+			IsPublic:    true,
+		},
+		{
+			Key:         "organization_name",
+			Value:       "Lewisham Community Hub",
+			Type:        "string",
+			Description: "Organization name for display",
+			IsPublic:    true,
+		},
+		{
+			Key:         "enable_flexible_shifts",
+			Value:       "true",
+			Type:        "bool",
+			Description: "Enable flexible shift scheduling feature",
+			IsPublic:    false,
+		},
+	}
+
+	for i := range configs {
+		configs[i].CreatedAt = time.Now()
+		configs[i].UpdatedAt = time.Now()
+	}
+
+	if err := db.Create(&configs).Error; err != nil {
+		return fmt.Errorf("failed to create system config: %w", err)
+	}
+
+	log.Printf("Created %d system configuration entries", len(configs))
+	return nil
+}
+
+// seedAuditLogs creates sample audit log entries
+func seedAuditLogs(db *gorm.DB) error {
+	// Check if audit logs already exist
+	var count int64
+	if err := db.Model(&models.AuditLog{}).Count(&count).Error; err != nil {
+		return err
+	}
+
+	if count > 0 {
+		log.Println("Audit logs already exist, skipping")
+		return nil
+	}
+
+	actions := []string{"Create", "Update", "Delete", "Login", "Logout", "Signup", "Cancel"}
+	entities := []string{"User", "Shift", "ShiftAssignment", "VolunteerApplication", "HelpRequest"}
+
+	var auditLogs []models.AuditLog
+	for i := 0; i < 50; i++ {
+		action := actions[rand.Intn(len(actions))]
+		entity := entities[rand.Intn(len(entities))]
+
+		auditLog := models.AuditLog{
+			Action:      action,
+			EntityType:  entity,
+			EntityID:    uint(rand.Intn(100) + 1),
+			Description: fmt.Sprintf("%s operation on %s", action, entity),
+			PerformedBy: "system",
+			IPAddress:   fmt.Sprintf("192.168.1.%d", rand.Intn(255)),
+			UserAgent:   "Mozilla/5.0 (Test Browser)",
+			CreatedAt:   time.Now().AddDate(0, 0, -i),
+		}
+
+		auditLogs = append(auditLogs, auditLog)
+	}
+
+	if err := db.Create(&auditLogs).Error; err != nil {
+		return fmt.Errorf("failed to create audit logs: %w", err)
+	}
+
+	log.Printf("Created %d audit log entries", len(auditLogs))
+	return nil
+}
+
+// Helper functions for shift seeding
+func getShiftDescription(role, shiftType string) string {
+	descriptions := map[string]map[string]string{
+		"Food Distribution": {
+			"fixed":    "Help distribute food packages to community members. Training provided.",
+			"flexible": "Flexible food distribution support - choose your hours within the available window.",
+			"open":     "Open-ended food distribution support as needed.",
+		},
+		"Administrative Support": {
+			"fixed":    "Assist with data entry, filing, and general office tasks.",
+			"flexible": "Flexible administrative support - work on various office tasks during available hours.",
+			"open":     "General administrative assistance as needed.",
+		},
+		"Community Outreach": {
+			"fixed":    "Engage with community members and promote our services.",
+			"flexible": "Flexible community engagement opportunities within scheduled timeframe.",
+			"open":     "Community outreach activities as opportunities arise.",
+		},
+		"Event Coordination": {
+			"fixed":    "Help organize and coordinate community events and activities.",
+			"flexible": "Support event preparation and coordination with flexible scheduling.",
+			"open":     "Event support as needed throughout the day.",
+		},
+		"Reception and Check-in": {
+			"fixed":    "Welcome visitors, handle check-ins, and provide information.",
+			"flexible": "Flexible reception duties - cover front desk during available hours.",
+			"open":     "Reception coverage as needed.",
+		},
+	}
+
+	if roleMap, exists := descriptions[role]; exists {
+		if desc, exists := roleMap[shiftType]; exists {
+			return desc
+		}
+		return roleMap["fixed"] // fallback
+	}
+	return fmt.Sprintf("Support %s activities", role)
+}
+
+func getRequiredSkills(role string) string {
+	skillsMap := map[string]string{
+		"Food Distribution":      "Physical fitness, Customer service, Basic math",
+		"Administrative Support": "Computer skills, Data entry, Organization",
+		"Community Outreach":     "Communication skills, Interpersonal skills, Cultural sensitivity",
+		"Event Coordination":     "Organization, Communication, Time management, Problem solving",
+		"Reception and Check-in": "Customer service, Communication, Basic computer skills",
+	}
+
+	if skills, exists := skillsMap[role]; exists {
+		return skills
+	}
+	return "Communication, Reliability, Teamwork"
+}
+
+func getRequiredEquipment(role string) string {
+	equipmentMap := map[string]string{
+		"Food Distribution":      "Apron, Gloves, Hair net",
+		"Administrative Support": "Computer, Printer access",
+		"Community Outreach":     "Comfortable walking shoes, Weather-appropriate clothing",
+		"Event Coordination":     "Clipboard, Phone, Comfortable shoes",
+		"Reception and Check-in": "Computer, Phone, Name badge",
+	}
+
+	if equipment, exists := equipmentMap[role]; exists {
+		return equipment
+	}
+	return "Name badge, Comfortable clothing"
 }
 
 // seedUsers creates a diverse set of users with different roles

@@ -9,11 +9,6 @@ import { LoadingSpinner } from '@/components/common/loading-components';
 import { ErrorBoundary } from '@/components/common/error-boundary';
 
 // Dynamic imports for code splitting
-const LazyVolunteerDashboard = dynamic(() => import('@/components/modern/volunteer-dashboard'), {
-  loading: () => <LoadingSpinner variant="skeleton" />,
-  ssr: false
-});
-
 const LazyAdminDashboard = dynamic(() => import('@/app/(dashboard)/admin/comprehensive/page'), {
   loading: () => <LoadingSpinner variant="pulse" />,
   ssr: false
@@ -106,7 +101,6 @@ export class ComponentPreloader {
   
   static preloadRouteComponents(userRole: string) {
     const preloadMap: Record<string, () => Promise<any>> = {
-      volunteer: () => import('@/components/modern/volunteer-dashboard'),
       admin: () => import('@/app/(dashboard)/admin/comprehensive/page'),
       visitor: () => import('@/app/(dashboard)/visitor/page'),
     };
@@ -308,7 +302,6 @@ export const useCodeSplitting = () => {
 };
 
 export {
-  LazyVolunteerDashboard,
   LazyAdminDashboard,
   LazyVisitorDashboard
 };

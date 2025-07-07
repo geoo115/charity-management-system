@@ -3,9 +3,9 @@ package volunteer
 import (
 	"fmt"
 	"log"
+	"math"
 	"net/http"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/geoo115/charity-management-system/internal/db"
@@ -13,10 +13,10 @@ import (
 	"github.com/geoo115/charity-management-system/internal/notifications"
 	"github.com/geoo115/charity-management-system/internal/utils"
 
+	"github.com/geoo115/charity-management-system/internal/handlers_new/shared"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"github.com/geoo115/charity-management-system/internal/handlers_new/shared"
 )
 
 // ApproveVolunteer approves a volunteer application and creates a user account
@@ -256,7 +256,7 @@ func ListAvailableShifts(c *gin.Context) {
 }
 
 // SignupForShift assigns a volunteer to a shift
-// Enhanced shift signup with comprehensive validation and flexible time support
+// Enhanced flexible shift signup with improved validation and capacity management
 func SignupForShift(c *gin.Context) {
 	shiftID := c.Param("id")
 
@@ -269,6 +269,7 @@ func SignupForShift(c *gin.Context) {
 
 	volunteerID, _ := shared.ConvertToUint(fmt.Sprintf("%v", userID))
 	if volunteerID == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid volunteer ID"})
 		return
 	}
 
@@ -290,68 +291,73 @@ func SignupForShift(c *gin.Context) {
 		return
 	}
 
-	// Comprehensive eligibility check
-	eligibilityResult := checkShiftEligibility(volunteerID, shift)
+	// Enhanced eligibility check with better error messages
+	eligibilityResult := checkShiftEligibilityEnhanced(volunteerID, shift)
 	if !eligibilityResult.Eligible {
 		c.JSON(http.StatusConflict, gin.H{
 			"error":       eligibilityResult.Reason,
 			"conflicts":   eligibilityResult.Conflicts,
 			"suggestions": eligibilityResult.Suggestions,
+			"code":        eligibilityResult.ErrorCode,
 		})
 		return
 	}
 
-	// Validate flexible time if provided
+	// Enhanced flexible time validation
 	var customStartTime, customEndTime *time.Time
 	var duration float64
 
 	if requestBody.FlexibleTime != nil && shift.Type == "flexible" {
+		// Validate flexible shift capacity
+		currentFlexibleAssignments := countFlexibleAssignments(shift.ID)
+		if currentFlexibleAssignments >= shift.FlexibleSlots {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "flexible shift capacity reached",
+				"code":  "CAPACITY_FULL",
+			})
+			return
+		}
+
+		// Parse and validate custom times with enhanced validation
+		if valid, validationError := validateFlexibleTimeSelection(
+			shift, requestBody.FlexibleTime.StartTime,
+			requestBody.FlexibleTime.EndTime, requestBody.FlexibleTime.Duration); !valid {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": validationError,
+				"code":  "INVALID_TIME_SELECTION",
+			})
+			return
+		}
+
 		// Parse custom times
 		shiftDate := shift.Date
-
-		customStart, err := time.Parse("15:04", requestBody.FlexibleTime.StartTime)
+		startDateTime, err := parseTimeOnDate(shiftDate, requestBody.FlexibleTime.StartTime)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid start time format"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid start time format",
+				"code":  "INVALID_START_TIME",
+			})
 			return
 		}
 
-		customEnd, err := time.Parse("15:04", requestBody.FlexibleTime.EndTime)
+		endDateTime, err := parseTimeOnDate(shiftDate, requestBody.FlexibleTime.EndTime)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid end time format"})
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "invalid end time format",
+				"code":  "INVALID_END_TIME",
+			})
 			return
 		}
-
-		// Combine date with time
-		startDateTime := time.Date(shiftDate.Year(), shiftDate.Month(), shiftDate.Day(),
-			customStart.Hour(), customStart.Minute(), 0, 0, shiftDate.Location())
-		endDateTime := time.Date(shiftDate.Year(), shiftDate.Month(), shiftDate.Day(),
-			customEnd.Hour(), customEnd.Minute(), 0, 0, shiftDate.Location())
 
 		customStartTime = &startDateTime
 		customEndTime = &endDateTime
 		duration = requestBody.FlexibleTime.Duration
 
-		// Validate that custom times are within shift range
-		if startDateTime.Before(shift.StartTime) || endDateTime.After(shift.EndTime) {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "selected time range is outside the available shift hours",
-			})
-			return
-		}
-
-		// Validate duration
-		actualDuration := endDateTime.Sub(startDateTime).Hours()
-		if actualDuration != duration {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "duration doesn't match selected time range",
-			})
-			return
-		}
-
-		// Check for conflicts with custom time
-		if err := validateFlexibleTimeConflicts(volunteerID, shiftDate, startDateTime, endDateTime); err != nil {
+		// Enhanced conflict checking for flexible times
+		if err := validateFlexibleTimeConflictsEnhanced(volunteerID, shiftDate, startDateTime, endDateTime); err != nil {
 			c.JSON(http.StatusConflict, gin.H{
 				"error": fmt.Sprintf("time conflict: %v", err),
+				"code":  "TIME_CONFLICT",
 			})
 			return
 		}
@@ -361,16 +367,29 @@ func SignupForShift(c *gin.Context) {
 	tx := db.DB.Begin()
 
 	// For flexible shifts, don't assign to the shift directly - use assignment record only
+	// For fixed shifts, assign volunteer to the shift
 	if shift.Type != "flexible" {
-		// Assign volunteer to shift for fixed shifts
 		if err := tx.Model(&shift).Update("assigned_volunteer_id", volunteerID).Error; err != nil {
 			tx.Rollback()
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to assign shift"})
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "failed to assign shift",
+				"code":  "DATABASE_ERROR",
+			})
+			return
+		}
+	} else {
+		// Update flexible slots used counter
+		if err := tx.Model(&shift).Update("flexible_slots_used", gorm.Expr("flexible_slots_used + ?", 1)).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "failed to update flexible slot count",
+				"code":  "DATABASE_ERROR",
+			})
 			return
 		}
 	}
 
-	// Create shift assignment record
+	// Create enhanced shift assignment record
 	assignment := models.ShiftAssignment{
 		ShiftID:         shift.ID,
 		UserID:          volunteerID,
@@ -379,51 +398,48 @@ func SignupForShift(c *gin.Context) {
 		CustomStartTime: customStartTime,
 		CustomEndTime:   customEndTime,
 		Duration:        duration,
-		CreatedAt:       time.Now(),
-		UpdatedAt:       time.Now(),
 	}
 
 	if err := tx.Create(&assignment).Error; err != nil {
 		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to create assignment record"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to create assignment record",
+			"code":  "DATABASE_ERROR",
+		})
 		return
 	}
 
 	// Commit transaction
 	if err := tx.Commit().Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to commit assignment"})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "failed to complete signup",
+			"code":  "TRANSACTION_ERROR",
+		})
 		return
 	}
 
 	// Send confirmation notification
 	go func() {
-		var volunteer models.User
-		if err := db.DB.First(&volunteer, volunteerID).Error; err == nil {
-			notificationService := shared.GetNotificationService()
-			if notificationService != nil {
+		notificationService := shared.GetNotificationService()
+		if notificationService != nil {
+			var volunteer models.User
+			if err := db.DB.First(&volunteer, volunteerID).Error; err == nil {
 				if err := notificationService.SendShiftSignupConfirmation(shift, volunteer); err != nil {
-					log.Printf("Failed to send shift signup confirmation: %v", err)
+					log.Printf("Failed to send shift signup notification: %v", err)
 				}
 			}
 		}
 	}()
 
-	// Create audit log
-	utils.CreateAuditLog(c, "SignUp", "Shift", shift.ID,
-		fmt.Sprintf("Volunteer %d signed up for shift on %s", volunteerID, shift.Date.Format("2006-01-02")))
-
-	// Build response
+	// Prepare response with enhanced information
 	response := gin.H{
 		"message": "Successfully signed up for shift",
 		"shift": gin.H{
-			"id":       shift.ID,
-			"date":     shift.Date.Format("2006-01-02"),
-			"location": shift.Location,
-			"role":     shift.Role,
-		},
-		"reminder_info": gin.H{
-			"reminder_time": "24 hours before shift",
-			"contact_info":  "volunteer@lewisham-hub.org",
+			"id":         shift.ID,
+			"title":      shift.Role + " - " + shift.Location,
+			"date":       shift.Date.Format("2006-01-02"),
+			"type":       shift.Type,
+			"assignment": assignment.ID,
 		},
 	}
 
@@ -442,13 +458,112 @@ func SignupForShift(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-// validateFlexibleTimeConflicts checks for scheduling conflicts with flexible time selection
-func validateFlexibleTimeConflicts(volunteerID uint, date time.Time, startTime, endTime time.Time) error {
+// timeRangesOverlap checks if two time ranges overlap
+func timeRangesOverlap(start1, end1, start2, end2 time.Time) bool {
+	return start1.Before(end2) && start2.Before(end1)
+}
+
+// Enhanced shift eligibility checking (type is defined in validation.go)
+
+// Enhanced eligibility checking with more detailed error codes
+func checkShiftEligibilityEnhanced(volunteerID uint, shift models.Shift) ShiftEligibilityResult {
+	// Check if shift is in the past (with 2-hour buffer)
+	cutoffTime := time.Now().Add(2 * time.Hour)
+	shiftStartTime := time.Date(shift.Date.Year(), shift.Date.Month(), shift.Date.Day(),
+		shift.StartTime.Hour(), shift.StartTime.Minute(), 0, 0, shift.Date.Location())
+
+	if shiftStartTime.Before(cutoffTime) {
+		return ShiftEligibilityResult{
+			Eligible:  false,
+			Reason:    "Cannot sign up for shifts starting in less than 2 hours",
+			ErrorCode: "TOO_LATE",
+			Suggestions: []string{
+				"Contact volunteer coordinator for emergency assignments",
+				"Look for shifts starting at least 2 hours from now",
+			},
+		}
+	}
+
+	// Check for time conflicts with other assigned shifts
+	var conflicts []models.Shift
+	db.DB.Where("assigned_volunteer_id = ? AND date::date = ?::date", volunteerID, shift.Date).Find(&conflicts)
+
+	for _, existingShift := range conflicts {
+		if timeRangesOverlapSameDay(shift.StartTime, shift.EndTime, existingShift.StartTime, existingShift.EndTime) {
+			return ShiftEligibilityResult{
+				Eligible:  false,
+				Reason:    fmt.Sprintf("Time conflict with existing shift from %s to %s", existingShift.StartTime.Format("15:04"), existingShift.EndTime.Format("15:04")),
+				ErrorCode: "TIME_CONFLICT",
+				Conflicts: []models.Shift{existingShift},
+				Suggestions: []string{
+					"Choose a different time slot",
+					"Cancel your existing shift if this one is more important",
+					"Contact coordinator about overlapping assignments",
+				},
+			}
+		}
+	}
+
+	return ShiftEligibilityResult{
+		Eligible: true,
+	}
+}
+
+// Enhanced eligibility checking with more detailed error codes
+func validateFlexibleTimeSelection(shift models.Shift, startTime, endTime string, duration float64) (bool, string) {
+	// Parse times
+	start, err := time.Parse("15:04", startTime)
+	if err != nil {
+		return false, "invalid start time format"
+	}
+
+	end, err := time.Parse("15:04", endTime)
+	if err != nil {
+		return false, "invalid end time format"
+	}
+
+	// Check if times are within shift boundaries
+	if start.Before(shift.StartTime) || end.After(shift.EndTime) {
+		return false, "selected time range is outside the available shift hours"
+	}
+
+	// Validate minimum/maximum hours if set
+	if shift.MinimumHours != nil && duration < *shift.MinimumHours {
+		return false, fmt.Sprintf("minimum commitment is %.1f hours", *shift.MinimumHours)
+	}
+
+	if shift.MaximumHours != nil && duration > *shift.MaximumHours {
+		return false, fmt.Sprintf("maximum commitment is %.1f hours", *shift.MaximumHours)
+	}
+
+	// Validate duration matches time difference
+	timeDiff := end.Sub(start).Hours()
+	if math.Abs(timeDiff-duration) > 0.1 { // Allow small floating point differences
+		return false, "duration doesn't match selected time range"
+	}
+
+	return true, ""
+}
+
+// Parse time string on a specific date
+func parseTimeOnDate(date time.Time, timeStr string) (time.Time, error) {
+	timePart, err := time.Parse("15:04", timeStr)
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	return time.Date(date.Year(), date.Month(), date.Day(),
+		timePart.Hour(), timePart.Minute(), 0, 0, date.Location()), nil
+}
+
+// Enhanced flexible time conflict validation
+func validateFlexibleTimeConflictsEnhanced(volunteerID uint, date time.Time, startTime, endTime time.Time) error {
 	// Get all existing assignments for this volunteer on the same date
 	var assignments []models.ShiftAssignment
 	err := db.DB.Joins("JOIN shifts ON shifts.id = shift_assignments.shift_id").
-		Where("shift_assignments.user_id = ? AND shifts.date::date = ?::date AND shift_assignments.status != 'Cancelled'",
-			volunteerID, date).
+		Where("shift_assignments.user_id = ? AND shifts.date::date = ?::date AND shift_assignments.status IN (?, ?)",
+			volunteerID, date, "Confirmed", "Assigned").
+		Preload("Shift").
 		Find(&assignments).Error
 
 	if err != nil {
@@ -464,233 +579,19 @@ func validateFlexibleTimeConflicts(volunteerID uint, date time.Time, startTime, 
 			conflictEnd = *assignment.CustomEndTime
 		} else {
 			// This is a fixed assignment, get shift times
-			var shift models.Shift
-			if err := db.DB.First(&shift, assignment.ShiftID).Error; err != nil {
-				continue // Skip if we can't load the shift
-			}
-			conflictStart = shift.StartTime
-			conflictEnd = shift.EndTime
+			conflictStart = assignment.Shift.StartTime
+			conflictEnd = assignment.Shift.EndTime
 		}
 
-		// Check for time overlap
-		if timeRangesOverlap(startTime, endTime, conflictStart, conflictEnd) {
-			return fmt.Errorf("conflicts with existing assignment from %s to %s",
+		// Check for time overlap with buffer (15 minutes)
+		buffer := 15 * time.Minute
+		if timeRangesOverlap(startTime.Add(-buffer), endTime.Add(buffer), conflictStart, conflictEnd) {
+			return fmt.Errorf("conflicts with existing assignment from %s to %s (including 15-minute buffer)",
 				conflictStart.Format("15:04"), conflictEnd.Format("15:04"))
 		}
 	}
 
 	return nil
-}
-
-// timeRangesOverlap checks if two time ranges overlap
-func timeRangesOverlap(start1, end1, start2, end2 time.Time) bool {
-	return start1.Before(end2) && start2.Before(end1)
-}
-
-// Enhanced shift eligibility checking
-type ShiftEligibilityResult struct {
-	Eligible    bool           `json:"eligible"`
-	Reason      string         `json:"reason,omitempty"`
-	Conflicts   []models.Shift `json:"conflicts,omitempty"`
-	Suggestions []string       `json:"suggestions,omitempty"`
-}
-
-func checkShiftEligibility(volunteerID uint, shift models.Shift) ShiftEligibilityResult {
-	log.Printf("Checking eligibility for volunteer %d, shift %d", volunteerID, shift.ID)
-
-	// Check if volunteer exists and is active
-	var volunteer models.User
-	if err := db.DB.First(&volunteer, volunteerID).Error; err != nil {
-		log.Printf("Volunteer %d not found: %v", volunteerID, err)
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "Volunteer not found",
-		}
-	}
-
-	if volunteer.Status != "active" {
-		log.Printf("Volunteer %d status is %s (not active)", volunteerID, volunteer.Status)
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "Volunteer account is not active",
-		}
-	}
-
-	// Check if shift is already assigned
-	if shift.AssignedVolunteerID != nil {
-		log.Printf("Shift %d already assigned to volunteer %d", shift.ID, *shift.AssignedVolunteerID)
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "Shift is already assigned to another volunteer",
-		}
-	}
-
-	// Check if shift is in the past
-	now := time.Now()
-	if shift.Date.Before(now) {
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "Cannot sign up for past shifts",
-		}
-	}
-
-	// Check if shift starts too soon (less than 2 hours from now)
-	shiftDateTime := time.Date(shift.Date.Year(), shift.Date.Month(), shift.Date.Day(),
-		shift.StartTime.Hour(), shift.StartTime.Minute(), 0, 0, shift.Date.Location())
-
-	if shiftDateTime.Sub(now).Hours() < 2 {
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "Cannot sign up for shifts starting in less than 2 hours",
-			Suggestions: []string{
-				"Contact volunteer coordinator for emergency assignments",
-				"Look for shifts starting at least 2 hours from now",
-			},
-		}
-	}
-
-	// Check for time conflicts with other assigned shifts
-	var conflicts []models.Shift
-
-	// Find all shifts for this volunteer on the same date (PostgreSQL syntax)
-	var allDayShifts []models.Shift
-	db.DB.Where("assigned_volunteer_id = ? AND date::date = ?::date", volunteerID, shift.Date).Find(&allDayShifts)
-
-	log.Printf("Found %d existing shifts for volunteer %d on date %s", len(allDayShifts), volunteerID, shift.Date.Format("2006-01-02"))
-
-	// Check for time overlaps manually
-	for _, existingShift := range allDayShifts {
-		// Extract time components for comparison
-		newStart := shift.StartTime.Hour()*60 + shift.StartTime.Minute()
-		newEnd := shift.EndTime.Hour()*60 + shift.EndTime.Minute()
-		existingStart := existingShift.StartTime.Hour()*60 + existingShift.StartTime.Minute()
-		existingEnd := existingShift.EndTime.Hour()*60 + existingShift.EndTime.Minute()
-
-		log.Printf("Checking overlap: New shift %d-%d vs Existing shift %d %d-%d",
-			newStart, newEnd, existingShift.ID, existingStart, existingEnd)
-
-		// Check for overlap: new shift starts before existing ends AND new shift ends after existing starts
-		if newStart < existingEnd && newEnd > existingStart {
-			log.Printf("Time conflict detected with shift %d", existingShift.ID)
-			conflicts = append(conflicts, existingShift)
-		}
-	}
-
-	if len(conflicts) > 0 {
-		suggestions := []string{
-			"Check your schedule and cancel conflicting shifts if needed",
-			"Look for shifts on different days",
-		}
-
-		return ShiftEligibilityResult{
-			Eligible:    false,
-			Reason:      "You have a conflicting shift at this time",
-			Conflicts:   conflicts,
-			Suggestions: suggestions,
-		}
-	}
-
-	// Check if volunteer has reached daily shift limit (max 2 shifts per day)
-	var dailyShifts []models.Shift
-	db.DB.Where("assigned_volunteer_id = ? AND date::date = ?::date", volunteerID, shift.Date).Find(&dailyShifts)
-
-	log.Printf("Found %d shifts for volunteer %d on date %s (daily limit check)", len(dailyShifts), volunteerID, shift.Date.Format("2006-01-02"))
-
-	if len(dailyShifts) >= 2 {
-		log.Printf("Daily limit exceeded: %d shifts >= 2", len(dailyShifts))
-		return ShiftEligibilityResult{
-			Eligible: false,
-			Reason:   "You have reached the maximum limit of 2 shifts per day",
-			Suggestions: []string{
-				"Consider spreading shifts across different days",
-				"Contact volunteer coordinator if you need to volunteer more hours",
-			},
-		}
-	}
-
-	// Check skills requirement if specified
-	if shift.RequiredSkills != "" {
-		log.Printf("Shift %d requires skills: %s", shift.ID, shift.RequiredSkills)
-		var volunteerApp models.VolunteerApplication
-		if err := db.DB.Where("email = ?", volunteer.Email).First(&volunteerApp).Error; err == nil {
-			log.Printf("Found volunteer application for %s with skills: %s", volunteer.Email, volunteerApp.Skills)
-			// Enhanced skills matching with flexibility
-			volunteerSkills := strings.ToLower(volunteerApp.Skills)
-			requiredSkills := strings.ToLower(shift.RequiredSkills)
-
-			// Check if volunteer has any of the required skills
-			skillsMatch := false
-			requiredSkillsList := strings.Split(requiredSkills, ",")
-			volunteerSkillsList := strings.Split(volunteerSkills, ",")
-
-			log.Printf("Required skills list: %v", requiredSkillsList)
-			log.Printf("Volunteer skills list: %v", volunteerSkillsList)
-
-			// Create skill synonyms map for flexible matching
-			skillSynonyms := map[string][]string{
-				"sorting":        {"organization", "organizing", "administrative", "data entry"},
-				"donation":       {"administrative support", "customer service", "communication"},
-				"administrative": {"admin", "administrative support", "data entry", "organization"},
-				"organization":   {"organizing", "sorting", "administrative"},
-				"communication":  {"customer service", "outreach", "public speaking"},
-			}
-
-			for _, reqSkill := range requiredSkillsList {
-				reqSkill = strings.TrimSpace(reqSkill)
-				log.Printf("Checking required skill: '%s'", reqSkill)
-
-				// Check direct match first
-				for _, volSkill := range volunteerSkillsList {
-					volSkill = strings.TrimSpace(volSkill)
-					if strings.Contains(volSkill, reqSkill) || strings.Contains(reqSkill, volSkill) {
-						skillsMatch = true
-						log.Printf("Direct skills match found: '%s' matches '%s'", volSkill, reqSkill)
-						break
-					}
-				}
-
-				// If no direct match, check synonyms
-				if !skillsMatch {
-					if synonyms, exists := skillSynonyms[reqSkill]; exists {
-						for _, synonym := range synonyms {
-							if strings.Contains(volunteerSkills, synonym) {
-								skillsMatch = true
-								log.Printf("Synonym match found: required '%s' matches volunteer skill containing '%s'", reqSkill, synonym)
-								break
-							}
-						}
-					}
-				}
-
-				if skillsMatch {
-					break
-				}
-			}
-
-			if !skillsMatch {
-				log.Printf("No skills match found - rejecting signup")
-				return ShiftEligibilityResult{
-					Eligible: false,
-					Reason:   fmt.Sprintf("This shift requires skills: %s. Your skills: %s", shift.RequiredSkills, volunteerApp.Skills),
-					Suggestions: []string{
-						"Consider training to develop required skills",
-						"Look for shifts that match your current skills",
-						"Contact volunteer coordinator about skill development opportunities",
-						"Many shifts provide on-the-job training",
-					},
-				}
-			}
-			log.Printf("Skills check passed")
-		} else {
-			log.Printf("Could not find volunteer application for %s: %v", volunteer.Email, err)
-		}
-	} else {
-		log.Printf("No skills requirement for shift %d", shift.ID)
-	}
-
-	return ShiftEligibilityResult{
-		Eligible: true,
-	}
 }
 
 // Enhanced volunteer dashboard with comprehensive statistics
@@ -701,6 +602,9 @@ func VolunteerDashboardStats(c *gin.Context) {
 		return
 	}
 
+	// Debug logging
+	fmt.Printf("DEBUG: VolunteerDashboardStats called for userID: %v\n", userID)
+
 	var user models.User
 	if err := db.DB.First(&user, userID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
@@ -710,10 +614,16 @@ func VolunteerDashboardStats(c *gin.Context) {
 	// Get comprehensive statistics
 	stats := calculateVolunteerStatistics(userID.(uint))
 
+	// Debug logging for stats
+	fmt.Printf("DEBUG: Stats calculated - Total Hours: %f, Shifts Completed: %d, Shifts Upcoming: %d\n",
+		stats.TotalHours, stats.ShiftsCompleted, stats.ShiftsUpcoming)
+
 	// Calculate monthly hours
 	now := time.Now()
 	thisMonthStart := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
 	var monthlyHours float64
+
+	// Get fixed shifts for this month
 	var monthlyShifts []models.Shift
 	db.DB.Where("assigned_volunteer_id = ? AND date >= ? AND date < ?",
 		userID, thisMonthStart, thisMonthStart.AddDate(0, 1, 0)).Find(&monthlyShifts)
@@ -723,11 +633,46 @@ func VolunteerDashboardStats(c *gin.Context) {
 		monthlyHours += duration.Hours()
 	}
 
-	// Get upcoming shifts count
+	// Get flexible shifts for this month via ShiftAssignment
+	var monthlyAssignments []models.ShiftAssignment
+	db.DB.Where("user_id = ? AND status = 'Confirmed'", userID).
+		Preload("Shift").
+		Find(&monthlyAssignments)
+
+	for _, assignment := range monthlyAssignments {
+		if assignment.Shift.Date.After(thisMonthStart) && assignment.Shift.Date.Before(thisMonthStart.AddDate(0, 1, 0)) {
+			if assignment.Duration > 0 {
+				monthlyHours += assignment.Duration
+			} else {
+				// Fall back to shift duration
+				duration := assignment.Shift.EndTime.Sub(assignment.Shift.StartTime)
+				monthlyHours += duration.Hours()
+			}
+		}
+	}
+
+	// Get upcoming shifts count (both fixed and flexible)
 	var upcomingShiftsCount int64
+
+	// Count fixed shifts
 	db.DB.Model(&models.Shift{}).
 		Where("assigned_volunteer_id = ? AND date >= ?", userID, now).
 		Count(&upcomingShiftsCount)
+
+	// Debug logging
+	fmt.Printf("DEBUG: Dashboard - Found %d upcoming fixed shifts\n", upcomingShiftsCount)
+
+	// Count flexible shifts via ShiftAssignment
+	var flexibleUpcomingCount int64
+	db.DB.Model(&models.ShiftAssignment{}).
+		Joins("JOIN shifts ON shift_assignments.shift_id = shifts.id").
+		Where("shift_assignments.user_id = ? AND shift_assignments.status = 'Confirmed' AND shifts.date >= ?", userID, now).
+		Count(&flexibleUpcomingCount)
+
+	upcomingShiftsCount += flexibleUpcomingCount
+
+	// Debug logging
+	fmt.Printf("DEBUG: Dashboard - Found %d upcoming flexible shifts, total: %d\n", flexibleUpcomingCount, upcomingShiftsCount)
 
 	// Calculate volunteer level based on stats
 	level := "New Volunteer"
@@ -768,7 +713,7 @@ func VolunteerDashboardStats(c *gin.Context) {
 	// Get achievements
 	achievements := calculateVolunteerAchievements(stats)
 
-	// Get recent activity (last 10 activities)
+	// Get recent activity (last 10 activities from both fixed and flexible shifts)
 	var recentShifts []models.Shift
 	db.DB.Where("assigned_volunteer_id = ? AND date < ?", userID, now).
 		Order("date DESC").Limit(10).Find(&recentShifts)
@@ -786,10 +731,35 @@ func VolunteerDashboardStats(c *gin.Context) {
 		recentActivity = append(recentActivity, activity)
 	}
 
+	// Add recent flexible shifts
+	var recentFlexibleAssignments []models.ShiftAssignment
+	db.DB.Where("user_id = ? AND status = 'Completed'", userID).
+		Preload("Shift").
+		Order("updated_at DESC").Limit(10).Find(&recentFlexibleAssignments)
+
+	for _, assignment := range recentFlexibleAssignments {
+		if assignment.Shift.Date.Before(now) && len(recentActivity) < 10 {
+			activity := gin.H{
+				"id":          assignment.Shift.ID,
+				"type":        "shift_completed",
+				"description": fmt.Sprintf("Completed %s shift at %s", assignment.Shift.Role, assignment.Shift.Location),
+				"date":        assignment.Shift.Date.Format("2006-01-02"),
+				"category":    "Volunteer Work",
+				"impact":      "medium",
+			}
+			recentActivity = append(recentActivity, activity)
+		}
+	}
+
+	// Debug logging final response
+	fmt.Printf("DEBUG: Final dashboard response - upcomingShifts: %d, hoursThisMonth: %f, totalHours: %f, shiftCompleted: %d\n",
+		upcomingShiftsCount, monthlyHours, stats.TotalHours, stats.ShiftsCompleted)
+
 	c.JSON(http.StatusOK, gin.H{
 		"upcomingShifts":    upcomingShiftsCount,
 		"hoursThisMonth":    monthlyHours,
 		"totalHours":        stats.TotalHours,
+		"shiftsCompleted":   stats.ShiftsCompleted,
 		"peopleHelped":      stats.PeopleHelped,
 		"level":             level,
 		"achievements":      achievements,
@@ -1359,53 +1329,100 @@ func calculateVolunteerStatistics(userID uint) VolunteerStats {
 	var stats VolunteerStats
 	now := time.Now()
 
-	// Get all completed shifts for this volunteer
+	// Debug logging
+	fmt.Printf("DEBUG: calculateVolunteerStatistics called for userID: %d\n", userID)
+
+	// Get all completed shifts for this volunteer (fixed shifts)
 	var completedShifts []models.Shift
 	db.DB.Where("assigned_volunteer_id = ? AND date < ? AND end_time < ?",
 		userID, now, now).Find(&completedShifts)
 
-	// Calculate total hours and shifts completed
+	// Debug logging
+	fmt.Printf("DEBUG: Found %d completed fixed shifts\n", len(completedShifts))
+
+	// Calculate total hours and shifts completed from fixed shifts
 	stats.ShiftsCompleted = len(completedShifts)
 	for _, shift := range completedShifts {
 		duration := shift.EndTime.Sub(shift.StartTime)
 		stats.TotalHours += duration.Hours()
 	}
 
-	// Get upcoming shifts
+	// Get completed flexible shifts via ShiftAssignment
+	var completedFlexibleAssignments []models.ShiftAssignment
+	db.DB.Where("user_id = ? AND status = 'Completed'", userID).
+		Preload("Shift").
+		Find(&completedFlexibleAssignments)
+
+	// Debug logging
+	fmt.Printf("DEBUG: Found %d completed flexible shift assignments\n", len(completedFlexibleAssignments))
+
+	// Add flexible shifts to stats
+	for _, assignment := range completedFlexibleAssignments {
+		if assignment.Shift.Date.Before(now) {
+			stats.ShiftsCompleted++
+			if assignment.Duration > 0 {
+				stats.TotalHours += assignment.Duration
+			} else {
+				// Fall back to shift duration
+				duration := assignment.Shift.EndTime.Sub(assignment.Shift.StartTime)
+				stats.TotalHours += duration.Hours()
+			}
+		}
+	}
+
+	// Get upcoming shifts (fixed)
 	var upcomingShifts []models.Shift
 	db.DB.Where("assigned_volunteer_id = ? AND date >= ?", userID, now).Find(&upcomingShifts)
 	stats.ShiftsUpcoming = len(upcomingShifts)
+
+	// Debug logging
+	fmt.Printf("DEBUG: Found %d upcoming fixed shifts\n", len(upcomingShifts))
+
+	// Get upcoming flexible shifts
+	var upcomingFlexibleAssignments []models.ShiftAssignment
+	db.DB.Where("user_id = ? AND status = 'Confirmed'", userID).
+		Preload("Shift").
+		Find(&upcomingFlexibleAssignments)
+
+	// Debug logging
+	fmt.Printf("DEBUG: Found %d upcoming flexible shift assignments\n", len(upcomingFlexibleAssignments))
+
+	for _, assignment := range upcomingFlexibleAssignments {
+		if assignment.Shift.Date.After(now) || assignment.Shift.Date.Equal(now) {
+			stats.ShiftsUpcoming++
+		}
+	}
 
 	// Calculate people helped (estimate based on shift type and duration)
 	// This is a simplified calculation - you might want to track this more precisely
 	stats.PeopleHelped = stats.ShiftsCompleted * 3 // Estimate 3 people helped per shift
 
 	// Get shift assignments to calculate reliability
-	var assignments []models.ShiftAssignment
-	db.DB.Where("user_id = ?", userID).Find(&assignments)
+	var allAssignments []models.ShiftAssignment
+	db.DB.Where("user_id = ?", userID).Find(&allAssignments)
 
-	totalAssignments := len(assignments)
-	completedAssignments := 0
-	cancelledAssignments := 0
-	noShowAssignments := 0
+	totalAssignments := len(allAssignments)
+	completedAssignmentCount := 0
+	cancelledAssignmentCount := 0
+	noShowAssignmentCount := 0
 
-	for _, assignment := range assignments {
+	for _, assignment := range allAssignments {
 		switch assignment.Status {
 		case "Completed":
-			completedAssignments++
+			completedAssignmentCount++
 		case "Cancelled":
-			cancelledAssignments++
+			cancelledAssignmentCount++
 		case "NoShow":
-			noShowAssignments++
+			noShowAssignmentCount++
 		}
 	}
 
-	stats.CancelledCount = cancelledAssignments
-	stats.NoShowCount = noShowAssignments
+	stats.CancelledCount = cancelledAssignmentCount
+	stats.NoShowCount = noShowAssignmentCount
 
 	// Calculate reliability score (0-100)
 	if totalAssignments > 0 {
-		reliability := float64(completedAssignments) / float64(totalAssignments)
+		reliability := float64(completedAssignmentCount) / float64(totalAssignments)
 		stats.ReliabilityScore = reliability * 100
 	} else {
 		stats.ReliabilityScore = 100 // New volunteers start with perfect score
