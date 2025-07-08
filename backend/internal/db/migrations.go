@@ -480,6 +480,15 @@ func (mm *MigrationManager) migrateModels(db *gorm.DB) error {
 			&models.VisitFeedback{},
 			&models.UrgentNeed{},
 		},
+		// Messaging and support models
+		{
+			&models.Conversation{},
+			&models.ConversationParticipant{},
+			&models.Message{},
+			&models.SupportTicket{},
+			&models.TicketMessage{},
+			&models.TicketAttachment{},
+		},
 		// Emergency management models
 		{
 			&models.EmergencyWorkflow{},

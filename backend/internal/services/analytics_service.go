@@ -230,8 +230,9 @@ func (as *AnalyticsService) HealthCheck(ctx context.Context) error {
 
 	// Check cache service if available
 	if as.cacheService != nil {
-		if err := as.cacheService.HealthCheck(); err != nil {
-			return fmt.Errorf("cache service health check failed: %w", err)
+		health := as.cacheService.HealthCheck()
+		if health == nil {
+			return fmt.Errorf("cache service health check failed")
 		}
 	}
 
@@ -465,12 +466,12 @@ func (as *AnalyticsService) getDonationMetrics(startDate, endDate time.Time) (*D
 	as.db.Model(&models.Donation{}).Where("created_at BETWEEN ? AND ?", lastMonth, thisMonth).Select("COALESCE(SUM(amount), 0)").Scan(&lastMonthAmount)
 	metrics.LastMonth = lastMonthAmount
 
-	// Donations by type
+	// Donations by type (within date range)
 	var typeCounts []struct {
 		Type   string
 		Amount float64
 	}
-	as.db.Model(&models.Donation{}).Select("type, COALESCE(SUM(amount), 0) as amount").Group("type").Scan(&typeCounts)
+	as.db.Model(&models.Donation{}).Where("created_at BETWEEN ? AND ?", startDate, endDate).Select("type, COALESCE(SUM(amount), 0) as amount").Group("type").Scan(&typeCounts)
 	for _, tc := range typeCounts {
 		metrics.ByType[tc.Type] = tc.Amount
 	}
@@ -487,17 +488,17 @@ func (as *AnalyticsService) getDocumentMetrics(startDate, endDate time.Time) (*D
 	// Total documents
 	as.db.Model(&models.Document{}).Count(&metrics.Total)
 
-	// Documents by status
+	// Documents by status (within date range for processing time calculation)
 	as.db.Model(&models.Document{}).Where("status = ?", "pending").Count(&metrics.Pending)
 	as.db.Model(&models.Document{}).Where("status = ?", "verified").Count(&metrics.Verified)
 	as.db.Model(&models.Document{}).Where("status = ?", "rejected").Count(&metrics.Rejected)
 
-	// Documents by type
+	// Documents by type (within date range)
 	var typeCounts []struct {
 		Type  string
 		Count int
 	}
-	as.db.Model(&models.Document{}).Select("type, count(*) as count").Group("type").Scan(&typeCounts)
+	as.db.Model(&models.Document{}).Where("created_at BETWEEN ? AND ?", startDate, endDate).Select("type, count(*) as count").Group("type").Scan(&typeCounts)
 	for _, tc := range typeCounts {
 		metrics.ByType[tc.Type] = tc.Count
 	}
@@ -642,10 +643,10 @@ func (as *AnalyticsService) GetUserAnalytics(userID uint, timeRange string) (map
 func (as *AnalyticsService) getVolunteerUserStats(userID uint, startDate, endDate time.Time) map[string]interface{} {
 	stats := make(map[string]interface{})
 
-	// Shift statistics
+	// Shift statistics (within date range)
 	var totalShifts, completedShifts int64
-	as.db.Model(&models.ShiftAssignment{}).Where("volunteer_id = ?", userID).Count(&totalShifts)
-	as.db.Model(&models.ShiftAssignment{}).Where("volunteer_id = ? AND status = ?", userID, "completed").Count(&completedShifts)
+	as.db.Model(&models.ShiftAssignment{}).Where("volunteer_id = ? AND created_at BETWEEN ? AND ?", userID, startDate, endDate).Count(&totalShifts)
+	as.db.Model(&models.ShiftAssignment{}).Where("volunteer_id = ? AND status = ? AND created_at BETWEEN ? AND ?", userID, "completed", startDate, endDate).Count(&completedShifts)
 
 	stats["total_shifts"] = totalShifts
 	stats["completed_shifts"] = completedShifts
@@ -660,15 +661,15 @@ func (as *AnalyticsService) getVolunteerUserStats(userID uint, startDate, endDat
 func (as *AnalyticsService) getVisitorUserStats(userID uint, startDate, endDate time.Time) map[string]interface{} {
 	stats := make(map[string]interface{})
 
-	// Visit statistics
+	// Visit statistics (within date range)
 	var totalVisits int64
-	as.db.Model(&models.Visit{}).Where("visitor_id = ?", userID).Count(&totalVisits)
+	as.db.Model(&models.Visit{}).Where("visitor_id = ? AND created_at BETWEEN ? AND ?", userID, startDate, endDate).Count(&totalVisits)
 	stats["total_visits"] = totalVisits
 
-	// Help request statistics
+	// Help request statistics (within date range)
 	var totalRequests, completedRequests int64
-	as.db.Model(&models.HelpRequest{}).Where("visitor_id = ?", userID).Count(&totalRequests)
-	as.db.Model(&models.HelpRequest{}).Where("visitor_id = ? AND status = ?", userID, "completed").Count(&completedRequests)
+	as.db.Model(&models.HelpRequest{}).Where("visitor_id = ? AND created_at BETWEEN ? AND ?", userID, startDate, endDate).Count(&totalRequests)
+	as.db.Model(&models.HelpRequest{}).Where("visitor_id = ? AND status = ? AND created_at BETWEEN ? AND ?", userID, "completed", startDate, endDate).Count(&completedRequests)
 
 	stats["total_help_requests"] = totalRequests
 	stats["completed_help_requests"] = completedRequests
@@ -679,11 +680,11 @@ func (as *AnalyticsService) getVisitorUserStats(userID uint, startDate, endDate 
 func (as *AnalyticsService) getDonorUserStats(userID uint, startDate, endDate time.Time) map[string]interface{} {
 	stats := make(map[string]interface{})
 
-	// Donation statistics
+	// Donation statistics (within date range)
 	var totalDonations int64
 	var totalAmount float64
-	as.db.Model(&models.Donation{}).Where("donor_id = ?", userID).Count(&totalDonations)
-	as.db.Model(&models.Donation{}).Where("donor_id = ?", userID).Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount)
+	as.db.Model(&models.Donation{}).Where("donor_id = ? AND created_at BETWEEN ? AND ?", userID, startDate, endDate).Count(&totalDonations)
+	as.db.Model(&models.Donation{}).Where("donor_id = ? AND created_at BETWEEN ? AND ?", userID, startDate, endDate).Select("COALESCE(SUM(amount), 0)").Scan(&totalAmount)
 
 	stats["total_donations"] = totalDonations
 	stats["total_amount"] = totalAmount

@@ -72,6 +72,9 @@ func setupBasicVolunteerRoutes(r *gin.Engine, config *VolunteerRouteConfig) erro
 		setupVolunteerPerformance(basicVolunteerGroup)
 	}
 
+	// Setup messaging routes
+	setupVolunteerMessaging(basicVolunteerGroup)
+
 	return nil
 }
 
@@ -143,6 +146,28 @@ func setupVolunteerPerformance(group *gin.RouterGroup) {
 	// Performance endpoints will be implemented when handlers are available
 	// For now, this is a placeholder to maintain the configuration structure
 	_ = group // Suppress unused parameter warning
+}
+
+// setupVolunteerMessaging configures messaging endpoints
+func setupVolunteerMessaging(group *gin.RouterGroup) {
+	messagingGroup := group.Group("/messages")
+	{
+		messagingGroup.POST("/send", volunteerHandlers.SendMessage)
+		messagingGroup.GET("/conversations", volunteerHandlers.GetConversations)
+		messagingGroup.GET("/conversations/:conversationId", volunteerHandlers.GetMessages)
+		messagingGroup.PUT("/:messageId/read", volunteerHandlers.MarkMessageAsRead)
+		messagingGroup.PUT("/conversations/:conversationId/read", volunteerHandlers.MarkConversationAsRead)
+		messagingGroup.GET("/unread/count", volunteerHandlers.GetUnreadCount)
+	}
+
+	// Support tickets routes
+	ticketGroup := group.Group("/support-tickets")
+	{
+		ticketGroup.POST("", volunteerHandlers.CreateSupportTicket)
+		ticketGroup.GET("", volunteerHandlers.GetSupportTickets)
+		ticketGroup.GET("/:ticketId", volunteerHandlers.GetSupportTicket)
+		ticketGroup.POST("/:ticketId/messages", volunteerHandlers.AddSupportTicketMessage)
+	}
 }
 
 // ================================================================

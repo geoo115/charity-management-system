@@ -437,7 +437,7 @@ func (h *ApplicationsHandler) sendApprovalEmail(application models.VolunteerAppl
 
 func (h *ApplicationsHandler) sendApprovalEmailWithPassword(user models.User, tempPassword string) error {
 	// Implementation would use the notification service
-	log.Printf("Approval email with password sent to %s", user.Email)
+	log.Printf("Approval email with password sent to %s (password: %s)", user.Email, tempPassword)
 	return nil
 }
 

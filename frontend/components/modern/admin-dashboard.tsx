@@ -98,6 +98,7 @@ import {
 } from 'recharts';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import AdminCommunicationCenter, { AdminCommunicationQuickAccess } from '@/components/admin/admin-communication-center';
 
 // Enhanced animation variants
 const containerVariants = {
@@ -2271,6 +2272,9 @@ export default function EnhancedAdminDashboard() {
           </Tabs>
         </motion.div>
       </motion.div>
+
+      {/* Communication Quick Access */}
+      <AdminCommunicationQuickAccess />
     </div>
   );
 }

@@ -153,6 +153,8 @@ func mapUserStatusToApplicationStatus(userStatus string) string {
 func getTrainingStatus(userID uint) string {
 	// Check if user has completed training
 	// This is a simplified check - in reality you'd check against a training records table
+	// TODO: Implement actual training status check for userID
+	_ = userID // Mark as intentionally unused for now
 	return "not_started"
 }
 

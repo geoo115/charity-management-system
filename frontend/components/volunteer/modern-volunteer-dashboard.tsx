@@ -72,6 +72,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/lib/auth/auth-context';
 import { apiClient } from '@/lib/api/api-client';
+import { CommunicationQuickAccess } from './communication-center';
 
 // Animation variants
 const containerVariants = {
@@ -1009,6 +1010,9 @@ export default function ModernVolunteerDashboard() {
           </div>
         </div>
       </div>
+      
+      {/* Communication Quick Access */}
+      <CommunicationQuickAccess />
     </motion.div>
   );
 }
