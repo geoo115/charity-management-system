@@ -14,6 +14,8 @@ import (
 type SupportTicketResponse struct {
 	ID          uint                     `json:"id"`
 	UserID      uint                     `json:"user_id"`
+	UserName    string                   `json:"user_name"`
+	UserEmail   string                   `json:"user_email"`
 	Subject     string                   `json:"subject"`
 	Description string                   `json:"description"`
 	Priority    string                   `json:"priority"`
@@ -92,7 +94,7 @@ func GetAllSupportTickets(c *gin.Context) {
 
 	// Build query with filters
 	query := database.Model(&models.SupportTicket{}).
-		Preload("Volunteer").
+		Preload("User").
 		Preload("AssignedUser").
 		Order("created_at DESC")
 
@@ -126,6 +128,12 @@ func GetAllSupportTickets(c *gin.Context) {
 			AssignedTo:  ticket.AssignedTo,
 			CreatedAt:   ticket.CreatedAt.Format("2006-01-02T15:04:05Z07:00"),
 			UpdatedAt:   ticket.UpdatedAt.Format("2006-01-02T15:04:05Z07:00"),
+		}
+
+		// Add user information if available
+		if ticket.User != nil {
+			response[i].UserName = ticket.User.FirstName + " " + ticket.User.LastName
+			response[i].UserEmail = ticket.User.Email
 		}
 
 		if ticket.ClosedAt != nil {

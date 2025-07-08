@@ -152,6 +152,8 @@ func setupVolunteerPerformance(group *gin.RouterGroup) {
 func setupVolunteerMessaging(group *gin.RouterGroup) {
 	messagingGroup := group.Group("/messages")
 	{
+		messagingGroup.GET("/admins/available", volunteerHandlers.GetAvailableAdmins)
+		messagingGroup.POST("/start-conversation", volunteerHandlers.StartConversation)
 		messagingGroup.POST("/send", volunteerHandlers.SendMessage)
 		messagingGroup.GET("/conversations", volunteerHandlers.GetConversations)
 		messagingGroup.GET("/conversations/:conversationId", volunteerHandlers.GetMessages)

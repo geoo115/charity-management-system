@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/geoo115/charity-management-system/internal/db"
+	"github.com/geoo115/charity-management-system/internal/models"
 	"github.com/geoo115/charity-management-system/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -398,4 +400,132 @@ func GetUnreadCount(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"unread_count": count})
+}
+
+// GetAvailableAdmins handles getting list of admins available for messaging
+func GetAvailableAdmins(c *gin.Context) {
+	_, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Get admins and senior volunteers from the database
+	database := db.GetDB()
+	var admins []struct {
+		ID     uint   `json:"id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+		Role   string `json:"role"`
+		Status string `json:"status"`
+	}
+
+	// Query for admins
+	err := database.Table("users").
+		Select("id, first_name || ' ' || last_name as name, email, role, status").
+		Where("role = ? AND status = ?", "admin", "active").
+		Find(&admins).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch admins"})
+		return
+	}
+
+	// Query for specialized and lead volunteers
+	var seniorVolunteers []struct {
+		ID     uint   `json:"id"`
+		Name   string `json:"name"`
+		Email  string `json:"email"`
+		Role   string `json:"role"`
+		Status string `json:"status"`
+	}
+
+	err = database.Table("users").
+		Select("users.id, users.first_name || ' ' || users.last_name as name, users.email, 'volunteer_' || volunteer_profiles.role_level as role, users.status").
+		Joins("JOIN volunteer_profiles ON volunteer_profiles.user_id = users.id").
+		Where("users.role = ? AND users.status = ? AND volunteer_profiles.role_level IN (?, ?)", "volunteer", "active", "specialized", "lead").
+		Find(&seniorVolunteers).Error
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch senior volunteers"})
+		return
+	}
+
+	// Combine admins and senior volunteers
+	allRecipients := append(admins, seniorVolunteers...)
+
+	c.JSON(http.StatusOK, gin.H{
+		"data": allRecipients,
+	})
+}
+
+// StartConversation handles starting a new conversation with an admin
+func StartConversation(c *gin.Context) {
+	userIDInterface, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	var userID uint
+	switch v := userIDInterface.(type) {
+	case uint:
+		userID = v
+	case int:
+		userID = uint(v)
+	default:
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var req struct {
+		AdminID        uint   `json:"admin_id" binding:"required"`
+		InitialMessage string `json:"initial_message" binding:"required,min=1"`
+		Subject        string `json:"subject"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verify the recipient exists and is active (admin or senior volunteer)
+	database := db.GetDB()
+	var recipient models.User
+
+	// First check if it's an admin
+	err := database.Where("id = ? AND role = ? AND status = ?", req.AdminID, "admin", "active").First(&recipient).Error
+	if err != nil {
+		// If not an admin, check if it's a senior volunteer
+		err = database.
+			Joins("JOIN volunteer_profiles ON volunteer_profiles.user_id = users.id").
+			Where("users.id = ? AND users.role = ? AND users.status = ? AND volunteer_profiles.role_level IN (?, ?)",
+				req.AdminID, "volunteer", "active", "specialized", "lead").
+			First(&recipient).Error
+
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid recipient ID"})
+			return
+		}
+	}
+
+	// Send the initial message (this will create a conversation automatically)
+	messagingService := services.NewMessagingService()
+	message, err := messagingService.SendMessage(
+		userID,
+		req.AdminID,
+		req.InitialMessage,
+		"text",
+		"",
+		"",
+	)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start conversation"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"data":    message,
+		"message": "Conversation started successfully",
+	})
 }

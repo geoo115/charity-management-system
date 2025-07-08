@@ -240,6 +240,8 @@ export default function EnhancedAdminDashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showCommunicationCenter, setShowCommunicationCenter] = useState(false);
+  const [communicationUnreadCount, setCommunicationUnreadCount] = useState(0);
 
   // Dashboard data state
   const [dashboardStats, setDashboardStats] = useState({
@@ -511,7 +513,8 @@ export default function EnhancedAdminDashboard() {
         fetchActivityData(),
         fetchBulkOperationsData(),
         fetchAuditData(),
-        fetchNotifications()
+        fetchNotifications(),
+        fetchCommunicationUnreadCount()
       ]);
       setLoading(false);
     };
@@ -543,7 +546,8 @@ export default function EnhancedAdminDashboard() {
         fetchActivityData(),
         fetchBulkOperationsData(),
         fetchAuditData(),
-        fetchNotifications()
+        fetchNotifications(),
+        fetchCommunicationUnreadCount()
       ]);
       toast({
         title: "Dashboard refreshed",
@@ -607,6 +611,40 @@ export default function EnhancedAdminDashboard() {
     }
   };
 
+  // Fetch communication unread count
+  const fetchCommunicationUnreadCount = async () => {
+    try {
+      // Fetch unread messages count
+      const messagesResponse = await authenticatedFetch('/api/v1/admin/volunteers/messages/conversations');
+      let unreadMessages = 0;
+      if (messagesResponse?.ok) {
+        const messagesData = await messagesResponse.json();
+        const conversations = messagesData.conversations || [];
+        conversations.forEach((conv: any) => {
+          if (conv.last_message && !conv.last_message.is_read && conv.last_message.sender_role !== 'admin') {
+            unreadMessages++;
+          }
+        });
+      }
+
+      // Fetch unread support tickets count
+      const ticketsResponse = await authenticatedFetch('/api/v1/admin/support-tickets');
+      let unreadTickets = 0;
+      if (ticketsResponse?.ok) {
+        const ticketsData = await ticketsResponse.json();
+        const tickets = ticketsData.tickets || [];
+        unreadTickets = tickets.filter((ticket: any) => 
+          ticket.status === 'Open' && ticket.messages && 
+          ticket.messages.some((msg: any) => !msg.is_read && msg.author_role !== 'admin')
+        ).length;
+      }
+
+      setCommunicationUnreadCount(unreadMessages + unreadTickets);
+    } catch (error) {
+      console.error('Error fetching communication unread count:', error);
+    }
+  };
+
   // Loading state
   if (loading) {
     return (
@@ -641,6 +679,22 @@ export default function EnhancedAdminDashboard() {
             </p>
           </div>
           <div className="flex items-center space-x-4 mt-4 lg:mt-0">
+            {/* Communication Quick Access */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCommunicationCenter(true)}
+              className="relative bg-gradient-to-r from-blue-500 to-purple-600 text-white border-none hover:from-blue-600 hover:to-purple-700"
+            >
+              <MessageSquare className="h-4 w-4 mr-1" />
+              Messages
+              {communicationUnreadCount > 0 && (
+                <Badge className="absolute -top-2 -right-2 h-5 w-5 rounded-full p-0 text-xs bg-red-500">
+                  {communicationUnreadCount > 9 ? '9+' : communicationUnreadCount}
+                </Badge>
+              )}
+            </Button>
+
             {/* Notification Bell */}
             <div className="relative">
               <Button
@@ -769,6 +823,12 @@ export default function EnhancedAdminDashboard() {
             </Button>
           </div>
         </motion.div>
+
+        {/* Communication Center */}
+        <AdminCommunicationCenter
+          isOpen={showCommunicationCenter}
+          onClose={() => setShowCommunicationCenter(false)}
+        />
 
         {/* Stats Grid */}
         <motion.div 

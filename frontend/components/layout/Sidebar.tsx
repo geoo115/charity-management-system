@@ -664,7 +664,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
         [filteredSections[0].title]: true
       }));
     }
-  }, []);
+  }, [filteredSections]);
 
   const handleLogout = async () => {
     try {

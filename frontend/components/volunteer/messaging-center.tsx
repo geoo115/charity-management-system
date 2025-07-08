@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageCircle, 
@@ -11,7 +11,9 @@ import {
   Phone,
   Video,
   CheckCircle2,
-  Clock
+  Clock,
+  Plus,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +21,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Message {
   id: number;
@@ -50,6 +56,14 @@ interface Conversation {
   updated_at: string;
 }
 
+interface Admin {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  is_active: boolean;
+}
+
 interface MessagingCenterProps {
   onClose?: () => void;
 }
@@ -62,26 +76,16 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [showNewConversationDialog, setShowNewConversationDialog] = useState(false);
+  const [availableAdmins, setAvailableAdmins] = useState<Admin[]>([]);
+  const [selectedAdminId, setSelectedAdminId] = useState<string>('');
+  const [initialMessage, setInitialMessage] = useState('');
+  const [isStartingConversation, setIsStartingConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  useEffect(() => {
-    fetchConversations();
-    fetchUnreadCount();
-  }, []);
-
-  useEffect(() => {
-    if (selectedConversation) {
-      fetchMessages(selectedConversation.id);
-    }
-  }, [selectedConversation]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
 
   const fetchConversations = async () => {
     try {
@@ -93,14 +97,48 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
       
       if (response.ok) {
         const data = await response.json();
-        setConversations(data.conversations || []);
+        const conversations = data.conversations || [];
+        setConversations(conversations);
+        return conversations;
       }
     } catch (error) {
       console.error('Failed to fetch conversations:', error);
     }
+    return [];
   };
 
-  const fetchMessages = async (conversationId: number) => {
+  const fetchUnreadCount = async () => {
+    try {
+      const response = await fetch('/api/v1/volunteer/messages/unread/count', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setUnreadCount(data.unread_count || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch unread count:', error);
+    }
+  };
+
+  const markConversationAsRead = useCallback(async (conversationId: number) => {
+    try {
+      await fetch(`/api/v1/volunteer/messages/conversations/${conversationId}/read`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      fetchUnreadCount(); // Refresh unread count
+    } catch (error) {
+      console.error('Failed to mark conversation as read:', error);
+    }
+  }, []);
+
+  const fetchMessages = useCallback(async (conversationId: number) => {
     try {
       const response = await fetch(`/api/v1/volunteer/messages/conversations/${conversationId}`, {
         headers: {
@@ -118,11 +156,26 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     }
-  };
+  }, [markConversationAsRead]);
 
-  const fetchUnreadCount = async () => {
+  useEffect(() => {
+    fetchConversations();
+    fetchUnreadCount();
+  }, []);
+
+  useEffect(() => {
+    if (selectedConversation) {
+      fetchMessages(selectedConversation.id);
+    }
+  }, [selectedConversation, fetchMessages]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const fetchAvailableAdmins = async () => {
     try {
-      const response = await fetch('/api/v1/volunteer/messages/unread/count', {
+      const response = await fetch('/api/v1/volunteer/messages/admins/available', {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
@@ -130,10 +183,54 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
       
       if (response.ok) {
         const data = await response.json();
-        setUnreadCount(data.unread_count || 0);
+        setAvailableAdmins(data.data || []);
       }
     } catch (error) {
-      console.error('Failed to fetch unread count:', error);
+      console.error('Failed to fetch available admins:', error);
+    }
+  };
+
+  const startNewConversation = async () => {
+    if (!selectedAdminId || !initialMessage.trim()) return;
+    
+    setIsStartingConversation(true);
+    try {
+      const response = await fetch('/api/v1/volunteer/messages/start-conversation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+        body: JSON.stringify({
+          admin_id: parseInt(selectedAdminId),
+          initial_message: initialMessage,
+        }),
+      });
+
+      if (response.ok) {
+        // Reset form
+        setSelectedAdminId('');
+        setInitialMessage('');
+        setShowNewConversationDialog(false);
+        
+        // Refresh conversations
+        await fetchConversations();
+        
+        // Find and select the new conversation
+        const updatedConversations = await fetchConversations();
+        const newConversation = updatedConversations?.find((conv: Conversation) => 
+          conv.participants.some(p => p.user_id === parseInt(selectedAdminId))
+        );
+        if (newConversation) {
+          setSelectedConversation(newConversation);
+        }
+      } else {
+        console.error('Failed to start conversation');
+      }
+    } catch (error) {
+      console.error('Failed to start conversation:', error);
+    } finally {
+      setIsStartingConversation(false);
     }
   };
 
@@ -160,9 +257,13 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('Message sent successfully:', data);
         setMessages(prev => [...prev, data.data]);
         setNewMessage('');
         fetchConversations(); // Refresh conversations to update last message
+      } else {
+        const errorData = await response.json();
+        console.error('Failed to send message:', response.status, errorData);
       }
     } catch (error) {
       console.error('Failed to send message:', error);
@@ -171,19 +272,7 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
     }
   };
 
-  const markConversationAsRead = async (conversationId: number) => {
-    try {
-      await fetch(`/api/v1/volunteer/messages/conversations/${conversationId}/read`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      fetchUnreadCount(); // Refresh unread count
-    } catch (error) {
-      console.error('Failed to mark conversation as read:', error);
-    }
-  };
+
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -229,11 +318,71 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
           <div className="p-4 border-b border-gray-200">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
-              {unreadCount > 0 && (
-                <Badge variant="destructive" className="ml-2">
-                  {unreadCount}
-                </Badge>
-              )}
+              <div className="flex items-center space-x-2">
+                {unreadCount > 0 && (
+                  <Badge variant="destructive">
+                    {unreadCount}
+                  </Badge>
+                )}
+                <Dialog open={showNewConversationDialog} onOpenChange={setShowNewConversationDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      size="sm" 
+                      className="bg-blue-500 hover:bg-blue-600"
+                      onClick={fetchAvailableAdmins}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Start New Conversation</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <Label htmlFor="admin-select">Select Admin</Label>
+                        <Select value={selectedAdminId} onValueChange={setSelectedAdminId}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Choose an admin to message" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {availableAdmins.map((admin) => (
+                              <SelectItem key={admin.id} value={admin.id.toString()}>
+                                {admin.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="initial-message">Initial Message</Label>
+                        <Textarea
+                          id="initial-message"
+                          placeholder="Type your message here..."
+                          value={initialMessage}
+                          onChange={(e) => setInitialMessage(e.target.value)}
+                          rows={4}
+                        />
+                      </div>
+                      <div className="flex justify-end space-x-2">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setShowNewConversationDialog(false)}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={startNewConversation}
+                          disabled={!selectedAdminId || !initialMessage.trim() || isStartingConversation}
+                          className="bg-blue-500 hover:bg-blue-600"
+                        >
+                          {isStartingConversation ? 'Starting...' : 'Start Conversation'}
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
             </div>
             
             {/* Search */}
@@ -254,8 +403,20 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
               {filteredConversations.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <MessageCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                  <p>No conversations yet</p>
-                  <p className="text-sm">Messages from admins will appear here</p>
+                  <p className="mb-2">No conversations yet</p>
+                  <p className="text-sm mb-4">Start a conversation with an admin</p>
+                  <Dialog open={showNewConversationDialog} onOpenChange={setShowNewConversationDialog}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-500 hover:bg-blue-600"
+                        onClick={fetchAvailableAdmins}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Start Conversation
+                      </Button>
+                    </DialogTrigger>
+                  </Dialog>
                 </div>
               ) : (
                 filteredConversations.map((conversation) => {
@@ -420,8 +581,19 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
             <div className="flex-1 flex items-center justify-center text-gray-500">
               <div className="text-center">
                 <MessageCircle className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
-                <p>Choose a conversation from the sidebar to start messaging</p>
+                <h3 className="text-lg font-medium mb-2">No conversation selected</h3>
+                <p className="mb-4">Choose a conversation from the sidebar or start a new one</p>
+                <Dialog open={showNewConversationDialog} onOpenChange={setShowNewConversationDialog}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      className="bg-blue-500 hover:bg-blue-600"
+                      onClick={fetchAvailableAdmins}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Start New Conversation
+                    </Button>
+                  </DialogTrigger>
+                </Dialog>
               </div>
             </div>
           )}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Ticket, 
@@ -40,7 +40,7 @@ interface SupportTicket {
   assignee_name?: string;
   attachment_url?: string;
   attachment_name?: string;
-  messages: TicketMessage[];
+  messages: TicketMessage[] | null;
   created_at: string;
   updated_at: string;
   resolved_at?: string;
@@ -95,17 +95,7 @@ export default function SupportTicketsCenter() {
 
   const priorities = ['Low', 'Medium', 'High', 'Urgent'];
 
-  useEffect(() => {
-    fetchTickets();
-  }, [statusFilter, categoryFilter]);
-
-  useEffect(() => {
-    if (selectedTicket) {
-      fetchTicketDetails(selectedTicket.id);
-    }
-  }, [selectedTicket?.id]);
-
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') params.append('status', statusFilter);
@@ -124,7 +114,17 @@ export default function SupportTicketsCenter() {
     } catch (error) {
       console.error('Failed to fetch tickets:', error);
     }
-  };
+  }, [statusFilter, categoryFilter]);
+
+  useEffect(() => {
+    fetchTickets();
+  }, [fetchTickets]);
+
+  useEffect(() => {
+    if (selectedTicket) {
+      fetchTicketDetails(selectedTicket.id);
+    }
+  }, [selectedTicket?.id]);
 
   const fetchTicketDetails = async (ticketId: number) => {
     try {
@@ -197,7 +197,7 @@ export default function SupportTicketsCenter() {
         const data = await response.json();
         setSelectedTicket(prev => prev ? {
           ...prev,
-          messages: [...prev.messages, data.data]
+          messages: [...(prev.messages || []), data.data]
         } : null);
         setNewMessage('');
         fetchTickets(); // Refresh the list to update last activity
@@ -451,7 +451,7 @@ export default function SupportTicketsCenter() {
                                 </Badge>
                               </div>
                               
-                              {ticket.messages.length > 1 && (
+                              {ticket.messages && ticket.messages.length > 1 && (
                                 <div className="flex items-center text-xs text-gray-500">
                                   <MessageSquare className="h-3 w-3 mr-1" />
                                   {ticket.messages.length}
@@ -511,7 +511,7 @@ export default function SupportTicketsCenter() {
               {/* Messages */}
               <ScrollArea className="flex-1 p-6">
                 <div className="space-y-6">
-                  {selectedTicket.messages.map((message, index) => {
+                  {selectedTicket.messages && selectedTicket.messages.map((message, index) => {
                     const isOwnMessage = message.author_role === 'volunteer';
                     
                     return (
