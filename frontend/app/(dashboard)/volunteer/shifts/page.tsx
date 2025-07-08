@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
@@ -29,7 +30,15 @@ import {
   TrendingUp,
   Activity,
   BookOpen,
-  ArrowRight
+  ArrowRight,
+  Heart,
+  Target,
+  Zap,
+  Award,
+  CalendarDays,
+  Timer,
+  UserCheck,
+  Sparkles
 } from 'lucide-react';
 import { fetchAvailableShifts, fetchAssignedShifts, fetchDashboardStats } from '@/lib/api/volunteer';
 import { VolunteerShift, VolunteerDashboardStats } from '@/lib/types/volunteer';
@@ -43,6 +52,28 @@ export default function ShiftsOverviewPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring" as const,
+        stiffness: 100
+      }
+    }
+  };
 
   useEffect(() => {
     const loadShiftData = async () => {
@@ -99,355 +130,398 @@ export default function ShiftsOverviewPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold">Shift Management</h1>
-          <p className="text-muted-foreground">
-            Manage your volunteer shifts and discover new opportunities
+    <motion.div 
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-4 sm:p-6"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Enhanced Header */}
+        <motion.div 
+          className="text-center space-y-4"
+          variants={itemVariants}
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900 rounded-full text-blue-600 dark:text-blue-400 text-sm font-medium">
+            <Sparkles className="h-4 w-4" />
+            Volunteer Impact Hub
+          </div>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Your Shift Management Center
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            Discover meaningful opportunities, track your impact, and connect with your community
           </p>
-        </div>
-        
-        <div className="flex items-center gap-3">
-          <Button asChild>
-            <Link href="/volunteer/shifts/available">
-              <Search className="h-4 w-4 mr-2" />
-              Browse Available Shifts
-            </Link>
-          </Button>
-        </div>
-      </div>
+        </motion.div>
 
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
+        {error && (
+          <motion.div variants={itemVariants}>
+            <Alert variant="destructive" className="border-red-200 bg-red-50 dark:bg-red-900/20">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Unable to Load Data</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
-      {/* Quick Stats */}
-      {stats && (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-full">
-                  <Calendar className="h-5 w-5 text-blue-600" />
+        {/* Enhanced Stats Grid */}
+        {stats && (
+          <motion.div 
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+            variants={itemVariants}
+          >
+            <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-blue-500 rounded-xl shadow-lg">
+                    <CalendarDays className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.upcomingShifts || 0}</p>
+                    <p className="text-sm text-blue-600/70 dark:text-blue-400/70 font-medium">Upcoming Shifts</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.upcomingShifts || 0}</p>
-                  <p className="text-sm text-muted-foreground">Upcoming Shifts</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-full">
-                  <Clock className="h-5 w-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.hoursThisMonth || 0}</p>
-                  <p className="text-sm text-muted-foreground">Hours This Month</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-full">
-                  <TrendingUp className="h-5 w-5 text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.totalHours || 0}</p>
-                  <p className="text-sm text-muted-foreground">Total Hours</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-orange-100 rounded-full">
-                  <Users className="h-5 w-5 text-orange-600" />
-                </div>
-                <div>
-                  <p className="text-2xl font-bold">{stats.peopleHelped || 0}</p>
-                  <p className="text-sm text-muted-foreground">People Helped</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      {/* Main Content Tabs */}
-      <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="upcoming">My Upcoming Shifts</TabsTrigger>
-          <TabsTrigger value="available">Available Opportunities</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Activity className="h-5 w-5" />
-                  Quick Actions
-                </CardTitle>
-                <CardDescription>
-                  Common shift management tasks
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link href="/volunteer/shifts/available">
-                    <Search className="h-4 w-4 mr-2" />
-                    Browse Available Shifts
-                    <ChevronRight className="h-4 w-4 ml-auto" />
-                  </Link>
-                </Button>
-                
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link href="/volunteer/shifts/my-shifts">
-                    <Calendar className="h-4 w-4 mr-2" />
-                    View My Shifts
-                    <ChevronRight className="h-4 w-4 ml-auto" />
-                  </Link>
-                </Button>
-                
-                <Button asChild className="w-full justify-start" variant="outline">
-                  <Link href="/volunteer/profile">
-                    <Star className="h-4 w-4 mr-2" />
-                    Update Availability
-                    <ChevronRight className="h-4 w-4 ml-auto" />
-                  </Link>
-                </Button>
               </CardContent>
             </Card>
 
-            {/* Recent Activity or Next Shift */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle className="h-5 w-5" />
-                  Next Shift
-                </CardTitle>
-                <CardDescription>
-                  Your upcoming volunteer commitment
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {stats?.nextShift ? (
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h3 className="font-semibold">{stats.nextShift.title}</h3>
-                        <p className="text-sm text-muted-foreground">{stats.nextShift.description}</p>
-                      </div>
-                      <Badge className={getShiftStatusColor(stats.nextShift.status)}>
-                        {stats.nextShift.status}
-                      </Badge>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatDate(stats.nextShift.date)}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        <span>{formatTime(stats.nextShift.startTime)} - {formatTime(stats.nextShift.endTime)}</span>
-                      </div>
-                      <div className="flex items-center gap-2 col-span-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span>{stats.nextShift.location}</span>
-                      </div>
-                    </div>
-                    
-                    <Button asChild className="w-full">
-                      <Link href={`/volunteer/shifts/${stats.nextShift.id}`}>
-                        View Details
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Link>
-                    </Button>
+            <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-800">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-green-500 rounded-xl shadow-lg">
+                    <Timer className="h-6 w-6 text-white" />
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground mb-4">No upcoming shifts scheduled</p>
-                    <Button asChild>
+                  <div>
+                    <p className="text-3xl font-bold text-green-600 dark:text-green-400">{stats.hoursThisMonth || 0}</p>
+                    <p className="text-sm text-green-600/70 dark:text-green-400/70 font-medium">Hours This Month</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-800">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-purple-500 rounded-xl shadow-lg">
+                    <Award className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-purple-600 dark:text-purple-400">{stats.totalHours || 0}</p>
+                    <p className="text-sm text-purple-600/70 dark:text-purple-400/70 font-medium">Total Hours</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-800">
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-orange-500 rounded-xl shadow-lg">
+                    <Heart className="h-6 w-6 text-white" />
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.peopleHelped || 0}</p>
+                    <p className="text-sm text-orange-600/70 dark:text-orange-400/70 font-medium">People Helped</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {/* Enhanced Main Content */}
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="overview" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-1">
+              <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Target className="h-4 w-4 mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="upcoming" className="rounded-lg data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Calendar className="h-4 w-4 mr-2" />
+                My Shifts
+              </TabsTrigger>
+              <TabsTrigger value="available" className="rounded-lg data-[state=active]:bg-blue-500 data-[state=active]:text-white">
+                <Zap className="h-4 w-4 mr-2" />
+                Opportunities
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="overview" className="space-y-8">
+              <div className="grid gap-8 lg:grid-cols-2">
+                {/* Enhanced Quick Actions */}
+                <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                        <Activity className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                      </div>
+                      Quick Actions
+                    </CardTitle>
+                    <CardDescription>
+                      Get started with these common tasks
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <Button asChild className="w-full justify-start h-12 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white shadow-lg">
                       <Link href="/volunteer/shifts/available">
+                        <Search className="h-5 w-5 mr-3" />
                         Browse Available Shifts
+                        <ChevronRight className="h-4 w-4 ml-auto" />
                       </Link>
                     </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="upcoming" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">My Upcoming Shifts</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/volunteer/shifts/my-shifts">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-          </div>
-
-          {myShifts.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {myShifts.map((shift) => (
-                <Card key={shift.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">{shift.title}</CardTitle>
-                      <Badge className={getShiftStatusColor(shift.status)}>
-                        {shift.status}
-                      </Badge>
-                    </div>
-                    <CardDescription className="line-clamp-2">
-                      {shift.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span>{formatDate(shift.date)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <span>{formatTime(shift.startTime)}</span>
-                      </div>
-                      <div className="flex items-center gap-1 col-span-2">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="truncate">{shift.location}</span>
-                      </div>
-                    </div>
                     
-                    <Button asChild className="w-full" size="sm">
-                      <Link href={`/volunteer/shifts/${shift.id}`}>
-                        View Details
+                    <Button asChild className="w-full justify-start h-12" variant="outline">
+                      <Link href="/volunteer/shifts/my-shifts">
+                        <Calendar className="h-5 w-5 mr-3" />
+                        View My Shifts
+                        <ChevronRight className="h-4 w-4 ml-auto" />
+                      </Link>
+                    </Button>
+                    
+                    <Button asChild className="w-full justify-start h-12" variant="outline">
+                      <Link href="/volunteer/profile">
+                        <UserCheck className="h-5 w-5 mr-3" />
+                        Update Availability
+                        <ChevronRight className="h-4 w-4 ml-auto" />
                       </Link>
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Upcoming Shifts</h3>
-                <p className="text-muted-foreground mb-6">
-                  You don't have any shifts scheduled. Browse available opportunities to get started.
-                </p>
-                <Button asChild>
-                  <Link href="/volunteer/shifts/available">
-                    <Search className="h-4 w-4 mr-2" />
-                    Find Shifts
+
+                {/* Enhanced Next Shift */}
+                <Card className="bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-3">
+                      <div className="p-2 bg-green-100 dark:bg-green-900 rounded-lg">
+                        <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+                      </div>
+                      Next Shift
+                    </CardTitle>
+                    <CardDescription>
+                      Your upcoming volunteer commitment
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {stats?.nextShift ? (
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold text-lg">{stats.nextShift.title}</h3>
+                            <p className="text-sm text-muted-foreground">{stats.nextShift.description}</p>
+                          </div>
+                          <Badge className={getShiftStatusColor(stats.nextShift.status)}>
+                            {stats.nextShift.status}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span>{formatDate(stats.nextShift.date)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span>{formatTime(stats.nextShift.startTime)} - {formatTime(stats.nextShift.endTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 col-span-2">
+                            <MapPin className="h-4 w-4 text-muted-foreground" />
+                            <span>{stats.nextShift.location}</span>
+                          </div>
+                        </div>
+                        
+                        <Button asChild className="w-full h-12 bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white">
+                          <Link href={`/volunteer/shifts/${stats.nextShift.id}`}>
+                            View Details
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <div className="p-4 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 rounded-2xl w-fit mx-auto mb-4">
+                          <Calendar className="h-12 w-12 text-muted-foreground mx-auto" />
+                        </div>
+                        <h3 className="font-semibold text-lg mb-2">No Upcoming Shifts</h3>
+                        <p className="text-muted-foreground mb-6">Ready to make a difference? Browse available opportunities</p>
+                        <Button asChild className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
+                          <Link href="/volunteer/shifts/available">
+                            <Search className="h-4 w-4 mr-2" />
+                            Find Opportunities
+                          </Link>
+                        </Button>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="upcoming" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">My Upcoming Shifts</h2>
+                  <p className="text-muted-foreground">Your committed volunteer activities</p>
+                </div>
+                <Button asChild variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Link href="/volunteer/shifts/my-shifts">
+                    View All
+                    <ChevronRight className="h-4 w-4 ml-1" />
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
+              </div>
 
-        <TabsContent value="available" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Available Opportunities</h2>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/volunteer/shifts/available">
-                View All
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
-          </div>
-
-          {availableShifts.length > 0 ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {availableShifts.map((shift) => (
-                <Card key={shift.id} className="hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="text-lg">{shift.title}</CardTitle>
-                      {shift.priority && (
-                        <Badge className={getPriorityColor(shift.priority)}>
-                          {shift.priority}
-                        </Badge>
-                      )}
+              {myShifts.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {myShifts.map((shift) => (
+                    <Card key={shift.id} className="hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-lg text-slate-900 dark:text-slate-100">{shift.title}</CardTitle>
+                          <Badge className={getShiftStatusColor(shift.status)}>
+                            {shift.status}
+                          </Badge>
+                        </div>
+                        <CardDescription className="line-clamp-2 text-slate-600 dark:text-slate-400">
+                          {shift.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span>{formatDate(shift.date)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-green-500" />
+                            <span>{formatTime(shift.startTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 col-span-2">
+                            <MapPin className="h-4 w-4 text-orange-500" />
+                            <span className="truncate">{shift.location}</span>
+                          </div>
+                        </div>
+                        
+                        <Button asChild className="w-full h-10" size="sm">
+                          <Link href={`/volunteer/shifts/${shift.id}`}>
+                            View Details
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <CardContent className="text-center py-16">
+                    <div className="p-4 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-2xl w-fit mx-auto mb-6">
+                      <Calendar className="h-16 w-16 text-blue-600 dark:text-blue-400 mx-auto" />
                     </div>
-                    <CardDescription className="line-clamp-2">
-                      {shift.description}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <div className="grid grid-cols-2 gap-2 text-sm">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3 text-muted-foreground" />
-                        <span>{formatDate(shift.date)}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3 text-muted-foreground" />
-                        <span>{formatTime(shift.startTime)}</span>
-                      </div>
-                      <div className="flex items-center gap-1 col-span-2">
-                        <MapPin className="h-3 w-3 text-muted-foreground" />
-                        <span className="truncate">{shift.location}</span>
-                      </div>
-                    </div>
-                    
-                    <Button asChild className="w-full" size="sm">
-                      <Link href={`/volunteer/shifts/${shift.id}`}>
-                        View & Apply
+                    <h3 className="text-xl font-semibold mb-3">No Upcoming Shifts</h3>
+                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                      You don't have any shifts scheduled. Browse available opportunities to get started making a difference.
+                    </p>
+                    <Button asChild className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
+                      <Link href="/volunteer/shifts/available">
+                        <Search className="h-4 w-4 mr-2" />
+                        Find Opportunities
                       </Link>
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <Card>
-              <CardContent className="text-center py-12">
-                <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">No Available Shifts</h3>
-                <p className="text-muted-foreground mb-6">
-                  There are currently no shifts available that match your profile. Check back later or update your availability.
-                </p>
-                <div className="flex gap-3 justify-center">
-                  <Button asChild variant="outline">
-                    <Link href="/volunteer/profile">
-                      <Star className="h-4 w-4 mr-2" />
-                      Update Profile
-                    </Link>
-                  </Button>
-                  <Button asChild>
-                    <Link href="/volunteer/shifts/available">
-                      <Search className="h-4 w-4 mr-2" />
-                      Browse All Shifts
-                    </Link>
-                  </Button>
+              )}
+            </TabsContent>
+
+            <TabsContent value="available" className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold">Available Opportunities</h2>
+                  <p className="text-muted-foreground">Discover new ways to make an impact</p>
                 </div>
-              </CardContent>
-            </Card>
-          )}
-        </TabsContent>
-      </Tabs>
-    </div>
+                <Button asChild variant="outline" size="sm" className="border-blue-200 text-blue-600 hover:bg-blue-50">
+                  <Link href="/volunteer/shifts/available">
+                    View All
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Link>
+                </Button>
+              </div>
+
+              {availableShifts.length > 0 ? (
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {availableShifts.map((shift) => (
+                    <Card key={shift.id} className="hover:shadow-lg transition-all duration-300 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 group">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <CardTitle className="text-lg text-slate-900 dark:text-slate-100 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                            {shift.title}
+                          </CardTitle>
+                          {shift.priority && (
+                            <Badge className={getPriorityColor(shift.priority)}>
+                              {shift.priority}
+                            </Badge>
+                          )}
+                        </div>
+                        <CardDescription className="line-clamp-2 text-slate-600 dark:text-slate-400">
+                          {shift.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-blue-500" />
+                            <span>{formatDate(shift.date)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="h-4 w-4 text-green-500" />
+                            <span>{formatTime(shift.startTime)}</span>
+                          </div>
+                          <div className="flex items-center gap-2 col-span-2">
+                            <MapPin className="h-4 w-4 text-orange-500" />
+                            <span className="truncate">{shift.location}</span>
+                          </div>
+                        </div>
+                        
+                        <Button asChild className="w-full h-10 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white group-hover:shadow-md transition-all" size="sm">
+                          <Link href={`/volunteer/shifts/${shift.id}`}>
+                            View & Apply
+                            <ArrowRight className="h-4 w-4 ml-2" />
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card className="border-2 border-dashed border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+                  <CardContent className="text-center py-16">
+                    <div className="p-4 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900 dark:to-purple-800 rounded-2xl w-fit mx-auto mb-6">
+                      <Search className="h-16 w-16 text-purple-600 dark:text-purple-400 mx-auto" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3">No Available Opportunities</h3>
+                    <p className="text-muted-foreground mb-8 max-w-md mx-auto">
+                      There are currently no shifts available that match your profile. Check back later or update your availability.
+                    </p>
+                    <div className="flex gap-4 justify-center">
+                      <Button asChild variant="outline" className="border-purple-200 text-purple-600 hover:bg-purple-50">
+                        <Link href="/volunteer/profile">
+                          <UserCheck className="h-4 w-4 mr-2" />
+                          Update Profile
+                        </Link>
+                      </Button>
+                      <Button asChild className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white">
+                        <Link href="/volunteer/shifts/available">
+                          <Search className="h-4 w-4 mr-2" />
+                          Browse All Shifts
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </motion.div>
+      </div>
+    </motion.div>
   );
 }
