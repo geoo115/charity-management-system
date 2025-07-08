@@ -19,17 +19,12 @@ type MigrationManager struct {
 
 // MigrationResult contains the result of a migration execution
 type MigrationResult struct {
-	Version     string `json:"version"`
-	Description string `json:"d		// Messaging system models
-		{
-			&models.Conversation{},
-			&models.ConversationParticipant{},
-			&models.Message{},
-		},n"`
-	Success   bool          `json:"success"`
-	Duration  time.Duration `json:"duration"`
-	Error     string        `json:"error,omitempty"`
-	Timestamp time.Time     `json:"timestamp"`
+	Version     string        `json:"version"`
+	Description string        `json:"description"`
+	Success     bool          `json:"success"`
+	Duration    time.Duration `json:"duration"`
+	Error       string        `json:"error,omitempty"`
+	Timestamp   time.Time     `json:"timestamp"`
 }
 
 // NewMigrationManager creates a new migration manager

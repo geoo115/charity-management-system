@@ -627,19 +627,7 @@ export default function EnhancedAdminDashboard() {
         });
       }
 
-      // Fetch unread support tickets count
-      const ticketsResponse = await authenticatedFetch('/api/v1/admin/support-tickets');
-      let unreadTickets = 0;
-      if (ticketsResponse?.ok) {
-        const ticketsData = await ticketsResponse.json();
-        const tickets = ticketsData.tickets || [];
-        unreadTickets = tickets.filter((ticket: any) => 
-          ticket.status === 'Open' && ticket.messages && 
-          ticket.messages.some((msg: any) => !msg.is_read && msg.author_role !== 'admin')
-        ).length;
-      }
-
-      setCommunicationUnreadCount(unreadMessages + unreadTickets);
+      setCommunicationUnreadCount(unreadMessages);
     } catch (error) {
       console.error('Error fetching communication unread count:', error);
     }
@@ -2334,7 +2322,10 @@ export default function EnhancedAdminDashboard() {
       </motion.div>
 
       {/* Communication Quick Access */}
-      <AdminCommunicationQuickAccess />
+      <AdminCommunicationQuickAccess 
+        onClick={() => setShowCommunicationCenter(true)}
+        unreadCount={communicationUnreadCount}
+      />
     </div>
   );
 }
