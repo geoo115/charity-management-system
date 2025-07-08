@@ -192,9 +192,10 @@ export default function EnhancedVolunteerProfile() {
 
   const addSkill = () => {
     if (newSkill.trim() && profile) {
+      const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
       setProfile({
         ...profile,
-        skills: [...profile.skills, newSkill.trim()]
+        skills: [...currentSkills, newSkill.trim()]
       });
       setNewSkill('');
     }
@@ -202,18 +203,20 @@ export default function EnhancedVolunteerProfile() {
 
   const removeSkill = (skillToRemove: string) => {
     if (profile) {
+      const currentSkills = Array.isArray(profile.skills) ? profile.skills : [];
       setProfile({
         ...profile,
-        skills: profile.skills.filter(skill => skill !== skillToRemove)
+        skills: currentSkills.filter(skill => skill !== skillToRemove)
       });
     }
   };
 
   const addInterest = () => {
     if (newInterest.trim() && profile) {
+      const currentInterests = Array.isArray(profile.interests) ? profile.interests : [];
       setProfile({
         ...profile,
-        interests: [...profile.interests, newInterest.trim()]
+        interests: [...currentInterests, newInterest.trim()]
       });
       setNewInterest('');
     }
@@ -221,9 +224,10 @@ export default function EnhancedVolunteerProfile() {
 
   const removeInterest = (interestToRemove: string) => {
     if (profile) {
+      const currentInterests = Array.isArray(profile.interests) ? profile.interests : [];
       setProfile({
         ...profile,
-        interests: profile.interests.filter(interest => interest !== interestToRemove)
+        interests: currentInterests.filter(interest => interest !== interestToRemove)
       });
     }
   };
@@ -269,9 +273,11 @@ export default function EnhancedVolunteerProfile() {
             <div className="flex items-center gap-6">
               <div className="relative">
                 <Avatar className="h-20 w-20 border-4 border-white shadow-lg">
-                  <AvatarImage src={profile.profilePhoto} alt={profile.name} />
+                  <AvatarImage src={profile.profilePhoto} alt={profile.name || 'Volunteer'} />
                   <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-semibold">
-                    {profile.name.split(' ').map(n => n[0]).join('')}
+                    {profile.name && typeof profile.name === 'string' && profile.name.trim() 
+                      ? profile.name.trim().split(' ').map(n => n[0]).join('') 
+                      : 'V'}
                   </AvatarFallback>
                 </Avatar>
                 <button className="absolute -bottom-2 -right-2 p-2 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-colors">
@@ -280,7 +286,7 @@ export default function EnhancedVolunteerProfile() {
               </div>
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
-                  {profile.name}
+                  {profile.name || 'Volunteer User'}
                 </h1>
                 <p className="text-muted-foreground mt-1">
                   Volunteer since {new Date(profile.joinDate).toLocaleDateString()}
@@ -364,7 +370,7 @@ export default function EnhancedVolunteerProfile() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-purple-100 font-medium">Achievements</p>
-                  <p className="text-3xl font-bold">{profile.achievements.length}</p>
+                  <p className="text-3xl font-bold">{Array.isArray(profile.achievements) ? profile.achievements.length : 0}</p>
                 </div>
                 <Award className="h-8 w-8 text-purple-200" />
               </div>
@@ -423,7 +429,7 @@ export default function EnhancedVolunteerProfile() {
                       <div>
                         <Label className="text-base font-semibold text-gray-900 dark:text-white">Achievements</Label>
                         <div className="mt-3 space-y-2">
-                          {profile.achievements.map((achievement, index) => (
+                          {(Array.isArray(profile.achievements) ? profile.achievements : []).map((achievement, index) => (
                             <div key={index} className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
                               <Award className="h-4 w-4 text-yellow-600" />
                               <span className="text-sm font-medium">{achievement}</span>
@@ -435,7 +441,7 @@ export default function EnhancedVolunteerProfile() {
                       <div>
                         <Label className="text-base font-semibold text-gray-900 dark:text-white">Certifications</Label>
                         <div className="mt-3 space-y-2">
-                          {profile.certifications.map((cert, index) => (
+                          {(Array.isArray(profile.certifications) ? profile.certifications : []).map((cert, index) => (
                             <div key={index} className="flex items-center gap-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                               <Shield className="h-4 w-4 text-blue-600" />
                               <span className="text-sm font-medium">{cert}</span>
@@ -454,7 +460,7 @@ export default function EnhancedVolunteerProfile() {
                         <Label htmlFor="name">Full Name</Label>
                         <Input
                           id="name"
-                          value={profile.name}
+                          value={profile.name || ''}
                           onChange={(e) => setProfile({...profile, name: e.target.value})}
                           disabled={!isEditing}
                           className="mt-1"
@@ -526,28 +532,28 @@ export default function EnhancedVolunteerProfile() {
                         <div className="mt-3 space-y-3">
                           <Input
                             placeholder="Name"
-                            value={profile.emergencyContact.name}
+                            value={profile.emergencyContact?.name || ''}
                             onChange={(e) => setProfile({
                               ...profile,
-                              emergencyContact: {...profile.emergencyContact, name: e.target.value}
+                              emergencyContact: {...(profile.emergencyContact || {}), name: e.target.value}
                             })}
                             disabled={!isEditing}
                           />
                           <Input
                             placeholder="Phone"
-                            value={profile.emergencyContact.phone}
+                            value={profile.emergencyContact?.phone || ''}
                             onChange={(e) => setProfile({
                               ...profile,
-                              emergencyContact: {...profile.emergencyContact, phone: e.target.value}
+                              emergencyContact: {...(profile.emergencyContact || {}), phone: e.target.value}
                             })}
                             disabled={!isEditing}
                           />
                           <Input
                             placeholder="Relationship"
-                            value={profile.emergencyContact.relationship}
+                            value={profile.emergencyContact?.relationship || ''}
                             onChange={(e) => setProfile({
                               ...profile,
-                              emergencyContact: {...profile.emergencyContact, relationship: e.target.value}
+                              emergencyContact: {...(profile.emergencyContact || {}), relationship: e.target.value}
                             })}
                             disabled={!isEditing}
                           />
@@ -563,7 +569,7 @@ export default function EnhancedVolunteerProfile() {
                       <Label className="text-base font-semibold">Skills</Label>
                       <div className="mt-3 space-y-3">
                         <div className="flex flex-wrap gap-2">
-                          {profile.skills.map((skill, index) => (
+                          {(Array.isArray(profile.skills) ? profile.skills : []).map((skill, index) => (
                             <Badge key={index} variant="secondary" className="text-sm">
                               {skill}
                               {isEditing && (
@@ -597,7 +603,7 @@ export default function EnhancedVolunteerProfile() {
                       <Label className="text-base font-semibold">Interests</Label>
                       <div className="mt-3 space-y-3">
                         <div className="flex flex-wrap gap-2">
-                          {profile.interests.map((interest, index) => (
+                          {(Array.isArray(profile.interests) ? profile.interests : []).map((interest, index) => (
                             <Badge key={index} variant="outline" className="text-sm">
                               {interest}
                               {isEditing && (
@@ -641,10 +647,10 @@ export default function EnhancedVolunteerProfile() {
                           </div>
                           <Switch
                             id="email-notifications"
-                            checked={profile.preferences.emailNotifications}
+                            checked={profile.preferences?.emailNotifications || false}
                             onCheckedChange={(checked) => setProfile({
                               ...profile,
-                              preferences: {...profile.preferences, emailNotifications: checked}
+                              preferences: {...(profile.preferences || {}), emailNotifications: checked}
                             })}
                             disabled={!isEditing}
                           />
@@ -657,10 +663,10 @@ export default function EnhancedVolunteerProfile() {
                           </div>
                           <Switch
                             id="sms-notifications"
-                            checked={profile.preferences.smsNotifications}
+                            checked={profile.preferences?.smsNotifications || false}
                             onCheckedChange={(checked) => setProfile({
                               ...profile,
-                              preferences: {...profile.preferences, smsNotifications: checked}
+                              preferences: {...(profile.preferences || {}), smsNotifications: checked}
                             })}
                             disabled={!isEditing}
                           />
@@ -679,10 +685,10 @@ export default function EnhancedVolunteerProfile() {
                         </p>
                         <select
                           id="profile-visibility"
-                          value={profile.preferences.profileVisibility}
+                          value={profile.preferences?.profileVisibility || 'volunteers'}
                           onChange={(e) => setProfile({
                             ...profile,
-                            preferences: {...profile.preferences, profileVisibility: e.target.value}
+                            preferences: {...(profile.preferences || {}), profileVisibility: e.target.value}
                           })}
                           disabled={!isEditing}
                           className="w-full p-2 border border-gray-300 rounded-md"
