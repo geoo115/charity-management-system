@@ -426,7 +426,6 @@ export default function EnhancedMyShifts() {
 
   const renderShiftCard = (shift: MyShift) => (
     <motion.div
-      key={shift.id}
       variants={cardHoverVariants}
       whileHover="hover"
       initial="rest"
@@ -767,7 +766,11 @@ export default function EnhancedMyShifts() {
 
                 <TabsContent value="upcoming" className="mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filterShiftsByStatus('upcoming').map(renderShiftCard)}
+                    {filterShiftsByStatus('upcoming').map((shift, index) => (
+                      <div key={`upcoming-${shift.id || `shift-${index}`}`}>
+                        {renderShiftCard(shift)}
+                      </div>
+                    ))}
                   </div>
                   {filterShiftsByStatus('upcoming').length === 0 && (
                     <div className="text-center py-12">
@@ -779,7 +782,11 @@ export default function EnhancedMyShifts() {
 
                 <TabsContent value="active" className="mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filterShiftsByStatus('active').map(renderShiftCard)}
+                    {filterShiftsByStatus('active').map((shift, index) => (
+                      <div key={`active-${shift.id || `shift-${index}`}`}>
+                        {renderShiftCard(shift)}
+                      </div>
+                    ))}
                   </div>
                   {filterShiftsByStatus('active').length === 0 && (
                     <div className="text-center py-12">
@@ -791,7 +798,11 @@ export default function EnhancedMyShifts() {
 
                 <TabsContent value="completed" className="mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filterShiftsByStatus('completed').map(renderShiftCard)}
+                    {filterShiftsByStatus('completed').map((shift, index) => (
+                      <div key={`completed-${shift.id || `shift-${index}`}`}>
+                        {renderShiftCard(shift)}
+                      </div>
+                    ))}
                   </div>
                   {filterShiftsByStatus('completed').length === 0 && (
                     <div className="text-center py-12">
@@ -803,7 +814,11 @@ export default function EnhancedMyShifts() {
 
                 <TabsContent value="all" className="mt-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {shifts.map(renderShiftCard)}
+                    {shifts.map((shift, index) => (
+                      <div key={`all-${shift.id || `shift-${index}`}`}>
+                        {renderShiftCard(shift)}
+                      </div>
+                    ))}
                   </div>
                   {shifts.length === 0 && (
                     <div className="text-center py-12">
