@@ -65,67 +65,6 @@ type ConversationParticipant struct {
 	User         *User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }
 
-// SupportTicket represents a support ticket
-type SupportTicket struct {
-	ID             uint           `json:"id" gorm:"primaryKey"`
-	TicketNo       string         `json:"ticket_no" gorm:"unique;not null;index"`
-	UserID         uint           `json:"user_id" gorm:"not null;index"`
-	AssignedTo     *uint          `json:"assigned_to,omitempty" gorm:"index"`
-	Subject        string         `json:"subject" gorm:"not null"`
-	Description    string         `json:"description" gorm:"type:text;not null"`
-	Category       string         `json:"category" gorm:"not null"`         // Technical, Shift-related, Training, Emergency
-	Priority       string         `json:"priority" gorm:"default:'Medium'"` // Low, Medium, High, Urgent
-	Status         string         `json:"status" gorm:"default:'Open'"`     // Open, In Progress, Resolved, Closed
-	IsEscalated    bool           `json:"is_escalated" gorm:"default:false"`
-	ResolutionNote string         `json:"resolution_note,omitempty" gorm:"type:text"`
-	ResolvedAt     *time.Time     `json:"resolved_at,omitempty"`
-	ClosedAt       *time.Time     `json:"closed_at,omitempty"`
-	CreatedAt      time.Time      `json:"created_at"`
-	UpdatedAt      time.Time      `json:"updated_at"`
-	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
-
-	// Relationships
-	User         *User              `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	AssignedUser *User              `json:"assigned_user,omitempty" gorm:"foreignKey:AssignedTo"`
-	Messages     []TicketMessage    `json:"messages,omitempty" gorm:"foreignKey:TicketID"`
-	Attachments  []TicketAttachment `json:"attachments,omitempty" gorm:"foreignKey:TicketID"`
-}
-
-// TicketMessage represents messages within a support ticket
-type TicketMessage struct {
-	ID          uint           `json:"id" gorm:"primaryKey"`
-	TicketID    uint           `json:"ticket_id" gorm:"not null;index"`
-	UserID      uint           `json:"user_id" gorm:"not null;index"`
-	Content     string         `json:"content" gorm:"type:text;not null"`
-	IsInternal  bool           `json:"is_internal" gorm:"default:false"` // Internal admin notes
-	IsSystemMsg bool           `json:"is_system_msg" gorm:"default:false"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
-
-	// Relationships
-	Ticket *SupportTicket `json:"ticket,omitempty" gorm:"foreignKey:TicketID"`
-	User   *User          `json:"user,omitempty" gorm:"foreignKey:UserID"`
-}
-
-// TicketAttachment represents file attachments in support tickets
-type TicketAttachment struct {
-	ID        uint           `json:"id" gorm:"primaryKey"`
-	TicketID  uint           `json:"ticket_id" gorm:"not null;index"`
-	UserID    uint           `json:"user_id" gorm:"not null;index"`
-	FileName  string         `json:"file_name" gorm:"not null"`
-	FileURL   string         `json:"file_url" gorm:"not null"`
-	FileSize  int64          `json:"file_size"`
-	MimeType  string         `json:"mime_type"`
-	CreatedAt time.Time      `json:"created_at"`
-	UpdatedAt time.Time      `json:"updated_at"`
-	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
-
-	// Relationships
-	Ticket *SupportTicket `json:"ticket,omitempty" gorm:"foreignKey:TicketID"`
-	User   *User          `json:"user,omitempty" gorm:"foreignKey:UserID"`
-}
-
 // MessageTemplates for common responses
 type MessageTemplate struct {
 	ID         uint           `json:"id" gorm:"primaryKey"`

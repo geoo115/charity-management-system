@@ -1,6 +1,7 @@
 package volunteer
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -80,6 +81,9 @@ func SendMessage(c *gin.Context) {
 		return
 	}
 
+	// Debug logging
+	fmt.Printf("Volunteer %d sending message to recipient %d: %s\n", userID, req.RecipientID, req.Content)
+
 	// Default message type if not provided
 	if req.MessageType == "" {
 		req.MessageType = "text"
@@ -95,6 +99,7 @@ func SendMessage(c *gin.Context) {
 		req.AttachmentName,
 	)
 	if err != nil {
+		fmt.Printf("Error sending message from volunteer %d to %d: %v\n", userID, req.RecipientID, err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send message"})
 		return
 	}

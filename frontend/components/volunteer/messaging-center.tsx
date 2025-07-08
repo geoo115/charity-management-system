@@ -237,11 +237,19 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedConversation) return;
 
-    const adminParticipant = selectedConversation.participants.find(p => p.role === 'admin');
-    if (!adminParticipant) return;
+    // Find the recipient (not the current user)
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const recipient = selectedConversation.participants.find(p => p.user_id !== currentUser.id);
+    
+    if (!recipient) {
+      console.error('No recipient found in conversation');
+      return;
+    }
 
     setIsLoading(true);
     try {
+      console.log('Sending message to recipient:', recipient.user_id, 'Content:', newMessage);
+      
       const response = await fetch('/api/v1/volunteer/messages/send', {
         method: 'POST',
         headers: {
@@ -249,7 +257,7 @@ export default function MessagingCenter({ onClose }: MessagingCenterProps) {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
         body: JSON.stringify({
-          recipient_id: adminParticipant.user_id,
+          recipient_id: recipient.user_id,
           content: newMessage,
           message_type: 'text',
         }),

@@ -45,7 +45,6 @@ func SetupAdminRoutes(r *gin.Engine) error {
 	setupVolunteerManagement(adminAPI)
 	setupShiftManagement(adminAPI)
 	setupSystemManagement(adminAPI)
-	setupSupportTickets(adminAPI)
 
 	// Setup feature modules
 	setupAnalytics(adminAPI)
@@ -331,19 +330,6 @@ func setupAuditLogs(group *gin.RouterGroup) {
 
 	// Legacy audit endpoint
 	group.GET("/audit", systemHandlers.ListAuditLogs)
-}
-
-// setupSupportTickets configures support ticket management endpoints
-func setupSupportTickets(group *gin.RouterGroup) {
-	ticketGroup := group.Group("/support-tickets")
-	{
-		// Admin support ticket management
-		ticketGroup.GET("", adminHandlers.GetAllSupportTickets)
-		ticketGroup.GET("/:id", adminHandlers.GetSupportTicket)
-		ticketGroup.PUT("/:id", adminHandlers.UpdateSupportTicket)
-		ticketGroup.POST("/:id/messages", adminHandlers.AddMessageToTicket)
-		ticketGroup.POST("/:id/assign", adminHandlers.AssignSupportTicket)
-	}
 }
 
 // ================================================================

@@ -161,15 +161,6 @@ func setupVolunteerMessaging(group *gin.RouterGroup) {
 		messagingGroup.PUT("/conversations/:conversationId/read", volunteerHandlers.MarkConversationAsRead)
 		messagingGroup.GET("/unread/count", volunteerHandlers.GetUnreadCount)
 	}
-
-	// Support tickets routes
-	ticketGroup := group.Group("/support-tickets")
-	{
-		ticketGroup.POST("", volunteerHandlers.CreateSupportTicket)
-		ticketGroup.GET("", volunteerHandlers.GetSupportTickets)
-		ticketGroup.GET("/:ticketId", volunteerHandlers.GetSupportTicket)
-		ticketGroup.POST("/:ticketId/messages", volunteerHandlers.AddSupportTicketMessage)
-	}
 }
 
 // ================================================================
