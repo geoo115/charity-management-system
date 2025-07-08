@@ -72,7 +72,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/lib/auth/auth-context';
 import { apiClient } from '@/lib/api/api-client';
-import { CommunicationQuickAccess } from './communication-center';
+import { CommunicationQuickAccess, CommunicationFloatingButton } from './communication-center';
 
 // Animation variants
 const containerVariants = {
@@ -407,6 +407,8 @@ export default function ModernVolunteerDashboard() {
           </div>
           
           <div className="flex items-center gap-3">
+            <CommunicationQuickAccess />
+            
             <Button 
               variant="outline" 
               size="sm" 
@@ -1011,8 +1013,8 @@ export default function ModernVolunteerDashboard() {
         </div>
       </div>
       
-      {/* Communication Quick Access */}
-      <CommunicationQuickAccess />
+      {/* Floating Communication Button */}
+      <CommunicationFloatingButton />
     </motion.div>
   );
 }
