@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/geoo115/charity-management-system/internal/observability"
@@ -76,7 +77,7 @@ func TracingMiddleware() gin.HandlerFunc {
 		// Set span status based on HTTP status code
 		statusCode := c.Writer.Status()
 		if statusCode >= 400 {
-			span.SetStatus(codes.Error, "HTTP "+string(rune(statusCode)))
+			span.SetStatus(codes.Error, fmt.Sprintf("HTTP %d", statusCode))
 		} else {
 			span.SetStatus(codes.Ok, "")
 		}
@@ -87,7 +88,7 @@ func TracingMiddleware() gin.HandlerFunc {
 				span.RecordError(err.Err)
 				span.AddEvent("error", trace.WithAttributes(
 					attribute.String("error.message", err.Error()),
-					attribute.String("error.type", string(err.Type)),
+					attribute.String("error.type", fmt.Sprintf("%d", err.Type)),
 				))
 			}
 		}

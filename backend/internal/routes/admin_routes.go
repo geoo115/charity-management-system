@@ -1,11 +1,11 @@
 package routes
 
 import (
-	adminHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/admin"
-	authHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/auth"
-	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
-	visitorHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/visitor"
-	volunteerHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/volunteer"
+	adminHandlers "github.com/geoo115/charity-management-system/internal/handlers/admin"
+	authHandlers "github.com/geoo115/charity-management-system/internal/handlers/auth"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers/system"
+	visitorHandlers "github.com/geoo115/charity-management-system/internal/handlers/visitor"
+	volunteerHandlers "github.com/geoo115/charity-management-system/internal/handlers/volunteer"
 	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -70,9 +70,9 @@ func SetupAdminRoutes(r *gin.Engine) error {
 
 // setupCoreDashboard configures core dashboard endpoints
 func setupCoreDashboard(group *gin.RouterGroup) {
-	// Core admin dashboard
-	group.GET("/dashboard", adminHandlers.AdminDashboard)
-	group.GET("/dashboard/stats", adminHandlers.AdminDashboardStats)
+	// Core admin dashboard - using simplified version
+	group.GET("/dashboard", adminHandlers.SimpleAdminDashboard)
+	group.GET("/dashboard/stats", adminHandlers.AdminGetVolunteerStats)
 	group.GET("/dashboard/charts", adminHandlers.AdminDashboardCharts)
 
 	// Activity and notifications
@@ -128,32 +128,16 @@ func setupStaffManagement(group *gin.RouterGroup) {
 func setupVolunteerManagement(group *gin.RouterGroup) {
 	volunteerGroup := group.Group("/volunteers")
 	{
-		// Basic volunteer operations
-		volunteerGroup.GET("", systemHandlers.OptimizedListVolunteers)
-		volunteerGroup.GET("/pending", volunteerHandlers.ListPendingVolunteers)
-		volunteerGroup.GET("/active", volunteerHandlers.ListActiveVolunteers)
-		volunteerGroup.GET("/by-role", volunteerHandlers.GetVolunteersByRole)
-
-		// Volunteer approval workflow
-		volunteerGroup.POST("/:id/approve", volunteerHandlers.ApproveVolunteer)
-		volunteerGroup.POST("/:id/reject", volunteerHandlers.RejectVolunteer)
-
-		// Performance and analytics
-		volunteerGroup.GET("/performance", systemHandlers.OptimizedVolunteerPerformance)
-		volunteerGroup.GET("/coverage-gaps", adminHandlers.AdminGetVolunteerCoverageGaps)
-		volunteerGroup.GET("/reliability", adminHandlers.AdminGetVolunteerReliabilityStats)
+		// Basic volunteer operations - using simplified versions
+		volunteerGroup.GET("", adminHandlers.AdminGetVolunteers)
+		volunteerGroup.GET("/stats", adminHandlers.AdminGetVolunteerStats)
 
 		// Individual volunteer management
-		volunteerGroup.GET("/:id/shifts/history", systemHandlers.OptimizedVolunteerShiftHistory)
+		volunteerGroup.GET("/:id/shifts", adminHandlers.AdminGetVolunteerShifts)
 
-		// Bulk operations
-		volunteerGroup.POST("/bulk-assign", systemHandlers.OptimizedBulkAssignVolunteers)
-
-		// Volunteer communication and messaging
-		volunteerGroup.POST("/:id/messages/send", adminHandlers.SendMessageToVolunteer)
-		volunteerGroup.GET("/:id/messages", adminHandlers.GetVolunteerConversation)
-		volunteerGroup.POST("/:id/messages/reply", adminHandlers.ReplyToVolunteer)
-		volunteerGroup.GET("/messages/conversations", adminHandlers.GetAllConversations)
+		// Shift assignment - using simplified versions
+		volunteerGroup.POST("/assign", adminHandlers.AdminAssignShift)
+		volunteerGroup.DELETE("/shifts/:id", adminHandlers.AdminUnassignShift)
 	}
 }
 

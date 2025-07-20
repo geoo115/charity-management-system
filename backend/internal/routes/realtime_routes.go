@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers/system"
 	"github.com/geoo115/charity-management-system/internal/middleware"
 )
 

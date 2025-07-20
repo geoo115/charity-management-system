@@ -5,15 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
 
-	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers/system"
 	"github.com/geoo115/charity-management-system/internal/middleware"
-	"github.com/geoo115/charity-management-system/internal/services"
+	"github.com/geoo115/charity-management-system/internal/observability"
 )
 
 // RouteSetupError represents errors during route setup
@@ -172,9 +171,8 @@ func (rm *RouteManager) setupSecurityMiddleware() error {
 	rm.router.Use(errorHandler.ErrorHandlerMiddleware())
 	rm.router.Use(errorHandler.RecoveryMiddleware())
 
-	// Create and apply performance monitor
-	performanceMonitor := NewPerformanceMonitor(500*time.Millisecond, true, true)
-	rm.router.Use(performanceMonitor.PerformanceMiddleware())
+	// Create and apply simplified metrics middleware
+	rm.router.Use(observability.SimpleMetricsMiddleware())
 
 	// Create and apply validation middleware
 	validationConfig := DefaultValidationConfig()
@@ -184,35 +182,23 @@ func (rm *RouteManager) setupSecurityMiddleware() error {
 	// Add security headers middleware
 	rm.router.Use(rm.securityHeadersMiddleware())
 
-	// Create and apply security validator
-	securityValidator := middleware.NewSecurityValidator()
-	rm.router.Use(securityValidator.ValidateRequest())
-	rm.router.Use(middleware.SanitizeInput())
+	// Create and apply simplified security middleware
+	rm.router.Use(middleware.SimpleSecurityMiddleware())
+	rm.router.Use(middleware.ContentSecurityPolicy())
 
 	// Apply global rate limiting
 	if rm.config.EnableRateLimit {
 		rm.router.Use(middleware.APIRateLimit())
 	}
 
-	// Add query optimization middleware for enhanced performance
-	rm.router.Use(services.OptimizedQueryMiddleware())
+	// Query optimization middleware removed for simplification
 
 	// Store middleware instances in router for access by handlers
 	rm.router.Use(func(c *gin.Context) {
 		c.Set("error_handler", errorHandler)
-		c.Set("performance_monitor", performanceMonitor)
 		c.Set("validation_middleware", validationMiddleware)
 		c.Next()
 	})
-
-	// Add performance monitoring endpoints for admins
-	adminGroup := rm.router.Group("/api/v1/admin")
-	adminGroup.Use(rm.middlewares.AdminOnly()...)
-	{
-		adminGroup.GET("/performance/report", performanceMonitor.PerformanceReportHandler())
-		adminGroup.GET("/performance/slow-queries", performanceMonitor.SlowQueriesHandler())
-		adminGroup.POST("/performance/reset", performanceMonitor.ResetMetricsHandler())
-	}
 
 	return nil
 }
@@ -264,6 +250,11 @@ func (rm *RouteManager) setupAuthRoutes() error {
 
 // setupRoleSpecificRoutes configures role-based routes
 func (rm *RouteManager) setupRoleSpecificRoutes() error {
+	// Charity routes (simplified)
+	if err := SetupCharityRoutes(rm.router); err != nil {
+		return err
+	}
+
 	// Visitor routes
 	if err := SetupVisitorRoutes(rm.router); err != nil {
 		return err

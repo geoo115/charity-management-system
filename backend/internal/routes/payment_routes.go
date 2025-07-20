@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"github.com/geoo115/charity-management-system/internal/handlers_new/payments"
+	"github.com/geoo115/charity-management-system/internal/handlers/payments"
 	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/gin-gonic/gin"
 )
