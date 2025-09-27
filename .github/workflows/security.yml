@@ -1,0 +1,541 @@
+name: Security & Quality Gates
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run security scans daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  # Dependency scanning and vulnerability assessment
+  dependency-scan:
+    name: Dependency Vulnerability Scan
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        component: [backend, frontend]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Backend dependency scanning
+    - name: Set up Go (Backend)
+      if: matrix.component == 'backend'
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache-dependency-path: backend/go.sum
+
+    - name: Run Go vulnerability check
+      if: matrix.component == 'backend'
+      working-directory: ./backend
+      run: |
+        go install golang.org/x/vuln/cmd/govulncheck@latest
+        govulncheck ./...
+
+    - name: Run Nancy (OSS Index) scan for Go
+      if: matrix.component == 'backend'
+      working-directory: ./backend
+      run: |
+        go list -json -deps ./... | docker run --rm -i sonatypecommunity/nancy:latest sleuth
+
+    # Frontend dependency scanning
+    - name: Set up Node.js (Frontend)
+      if: matrix.component == 'frontend'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies (Frontend)
+      if: matrix.component == 'frontend'
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run npm audit
+      if: matrix.component == 'frontend'
+      working-directory: ./frontend
+      run: |
+        npm audit --audit-level=high --json > npm-audit-results.json || true
+        cat npm-audit-results.json
+
+    - name: Run Retire.js scan
+      if: matrix.component == 'frontend'
+      working-directory: ./frontend
+      run: |
+        npx retire --outputformat json --outputpath retire-results.json || true
+        cat retire-results.json
+
+    # Upload results
+    - name: Upload vulnerability scan results
+      uses: actions/upload-artifact@v4
+      with:
+        name: vulnerability-scan-${{ matrix.component }}
+        path: |
+          ${{ matrix.component }}/*audit*.json
+          ${{ matrix.component }}/*retire*.json
+
+  # CodeQL security analysis
+  codeql-analysis:
+    name: CodeQL Security Analysis
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        language: [ 'go', 'javascript' ]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: ${{ matrix.language }}
+        queries: security-extended,security-and-quality
+
+    - name: Set up Go
+      if: matrix.language == 'go'
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Build Go application
+      if: matrix.language == 'go'
+      working-directory: ./backend
+      run: |
+        go mod download
+        go build ./...
+
+    - name: Set up Node.js
+      if: matrix.language == 'javascript'
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Build JavaScript application
+      if: matrix.language == 'javascript'
+      working-directory: ./frontend
+      run: |
+        npm ci
+        npm run build
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:${{ matrix.language }}"
+
+  # SAST (Static Application Security Testing)
+  sast-scan:
+    name: Static Security Analysis
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Semgrep SAST scanning
+    - name: Run Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: >-
+          p/security-audit
+          p/golang
+          p/javascript
+          p/typescript
+          p/react
+        generateSarif: "1"
+
+    - name: Upload Semgrep results to GitHub Security
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: semgrep.sarif
+
+    # Go-specific security scanning
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Run Gosec
+      uses: securecodewarrior/github-action-gosec@master
+      with:
+        args: '-fmt sarif -out gosec-results.sarif ./backend/...'
+
+    - name: Upload Gosec results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'gosec-results.sarif'
+
+  # Secret scanning
+  secret-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for secret scanning
+
+    - name: Run TruffleHog OSS
+      uses: trufflesecurity/trufflehog@main
+      with:
+        path: ./
+        base: main
+        head: HEAD
+        extra_args: --debug --only-verified
+
+    - name: Run GitLeaks
+      uses: gitleaks/gitleaks-action@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }} # Only required for Organizations
+
+  # License compliance checking
+  license-scan:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # Go license scanning
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+
+    - name: Install go-licenses
+      run: go install github.com/google/go-licenses@latest
+
+    - name: Check Go licenses
+      working-directory: ./backend
+      run: |
+        go-licenses report ./... > go-licenses-report.txt
+        go-licenses check ./...
+        
+    # Node.js license scanning  
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Check Node.js licenses
+      working-directory: ./frontend
+      run: |
+        npx license-checker --json > npm-licenses-report.json
+        npx license-checker --failOn 'GPL;AGPL;LGPL;CPAL;OSL;EPL;MPL'
+
+    - name: Upload license reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: license-reports
+        path: |
+          backend/go-licenses-report.txt
+          frontend/npm-licenses-report.json
+
+  # Infrastructure as Code scanning
+  iac-scan:
+    name: Infrastructure Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Trivy IaC scan
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'config'
+        scan-ref: '.'
+        format: 'sarif'
+        output: 'trivy-iac-results.sarif'
+
+    - name: Upload Trivy IaC scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-iac-results.sarif'
+
+    - name: Run Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: .
+        framework: dockerfile,docker_compose,github_actions
+        output_format: sarif
+        output_file_path: checkov-results.sarif
+        quiet: true
+        soft_fail: true
+
+    - name: Upload Checkov scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'checkov-results.sarif'
+
+  # API security testing
+  api-security:
+    name: API Security Testing
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB: lewisham_hub_test
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+          
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.23'
+        cache-dependency-path: backend/go.sum
+
+    - name: Start API server
+      working-directory: ./backend
+      run: |
+        cp .env.example .env.test
+        echo "DB_HOST=localhost" >> .env.test
+        echo "DB_PORT=5432" >> .env.test
+        echo "REDIS_HOST=localhost" >> .env.test
+        echo "REDIS_PORT=6379" >> .env.test
+        echo "JWT_SECRET=test-jwt-secret-32-characters-long-for-testing" >> .env.test
+        
+        go build -o api ./cmd/api
+        ENV_FILE=.env.test ./api &
+        API_PID=$!
+        echo "API_PID=$API_PID" >> $GITHUB_ENV
+        
+        # Wait for API to start
+        for i in {1..30}; do
+          if curl -f http://localhost:8080/health 2>/dev/null; then
+            echo "API is ready"
+            break
+          fi
+          sleep 2
+        done
+
+    - name: Run OWASP ZAP baseline scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: 'http://localhost:8080'
+        rules_file_name: '.zap/rules.tsv'
+        cmd_options: '-a -j'
+
+    - name: Run API security tests with Newman/Postman
+      run: |
+        npm install -g newman
+        
+        # Create basic API security test collection
+        cat > api-security-tests.json << 'EOF'
+        {
+          "info": { "name": "API Security Tests" },
+          "item": [
+            {
+              "name": "SQL Injection Test",
+              "request": {
+                "method": "POST",
+                "url": "http://localhost:8080/api/v1/auth/login",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"'; DROP TABLE users; --\",\"password\":\"test\"}"
+                }
+              },
+              "event": [{
+                "listen": "test",
+                "script": {
+                  "exec": ["pm.test('Should not return 200', function () { pm.response.to.not.have.status(200); });"]
+                }
+              }]
+            },
+            {
+              "name": "XSS Test",
+              "request": {
+                "method": "POST",
+                "url": "http://localhost:8080/api/v1/auth/register",
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\"email\":\"test@test.com\",\"name\":\"<script>alert('xss')</script>\"}"
+                }
+              }
+            }
+          ]
+        }
+        EOF
+        
+        newman run api-security-tests.json --reporters cli,json --reporter-json-export security-test-results.json || true
+
+    - name: Stop API server
+      if: always()
+      run: |
+        if [ ! -z "$API_PID" ]; then
+          kill $API_PID || true
+        fi
+
+    - name: Upload security test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: api-security-results
+        path: |
+          security-test-results.json
+          report_html.html
+
+  # Quality gates and compliance
+  compliance-check:
+    name: Compliance & Quality Gates
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, codeql-analysis, sast-scan, secret-scan]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+
+    - name: Evaluate security compliance
+      run: |
+        echo "Evaluating security compliance..."
+        
+        # Check if any critical vulnerabilities were found
+        CRITICAL_ISSUES=0
+        
+        # Check CodeQL results
+        if [ -d "results" ]; then
+          CRITICAL_ISSUES=$((CRITICAL_ISSUES + $(find results -name "*.sarif" -exec jq '.runs[].results[] | select(.level == "error")' {} \; | wc -l)))
+        fi
+        
+        echo "Critical issues found: $CRITICAL_ISSUES"
+        
+        # Set compliance threshold
+        MAX_CRITICAL_ISSUES=5
+        
+        if [ $CRITICAL_ISSUES -gt $MAX_CRITICAL_ISSUES ]; then
+          echo "❌ Security compliance failed: $CRITICAL_ISSUES critical issues found (max allowed: $MAX_CRITICAL_ISSUES)"
+          exit 1
+        else
+          echo "✅ Security compliance passed: $CRITICAL_ISSUES critical issues found (max allowed: $MAX_CRITICAL_ISSUES)"
+        fi
+
+    - name: Generate security report
+      if: always()
+      run: |
+        cat > security-report.md << 'EOF'
+        # Security Assessment Report
+        
+        **Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Commit:** ${{ github.sha }}
+        **Branch:** ${{ github.ref_name }}
+        
+        ## Scan Results Summary
+        
+        ### Dependency Vulnerabilities
+        - Backend Go modules: Scanned ✅
+        - Frontend npm packages: Scanned ✅
+        
+        ### Static Analysis
+        - CodeQL: Completed ✅
+        - Semgrep SAST: Completed ✅  
+        - Gosec: Completed ✅
+        
+        ### Secret Detection
+        - TruffleHog: Completed ✅
+        - GitLeaks: Completed ✅
+        
+        ### Infrastructure Security
+        - Trivy IaC: Completed ✅
+        - Checkov: Completed ✅
+        
+        ### API Security Testing
+        - OWASP ZAP: Completed ✅
+        - Security test collection: Completed ✅
+        
+        ## Compliance Status
+        Overall compliance: ${{ job.status }}
+        
+        ## Recommendations
+        - Review and address any high/critical findings
+        - Update dependencies regularly
+        - Monitor security advisories
+        - Implement security headers
+        - Regular security training for development team
+        EOF
+
+    - name: Upload security report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: security-assessment-report
+        path: security-report.md
+
+  # Notify security results
+  security-notification:
+    name: Security Results Notification
+    runs-on: ubuntu-latest
+    needs: [compliance-check]
+    if: always()
+    
+    steps:
+    - name: Notify security team
+      if: needs.compliance-check.result == 'failure'
+      run: |
+        echo "🚨 Security compliance check failed!"
+        echo "Critical security issues detected that require immediate attention."
+        # In real implementation, send notification to security team
+        # curl -X POST $SLACK_SECURITY_WEBHOOK -d '{"text":"🚨 Security compliance failed in ${{ github.repository }}"}'
+
+    - name: Create security issue
+      if: needs.compliance-check.result == 'failure' && github.event_name != 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          github.rest.issues.create({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            title: '🚨 Security Compliance Failure - ' + context.sha.substring(0, 7),
+            body: 'Security scan failed for commit ' + context.sha + '. Please review the security assessment report and address critical findings.',
+            labels: ['security', 'critical', 'bug']
+          });

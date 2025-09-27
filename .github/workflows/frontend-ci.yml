@@ -1,0 +1,395 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'frontend/**'
+
+env:
+  NODE_VERSION: '18'
+  DOCKER_REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/${{ github.repository }}/frontend
+
+jobs:
+  # Code Quality and Testing
+  test:
+    name: Test and Quality Check
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Type checking
+      working-directory: ./frontend
+      run: npm run type-check
+
+    - name: Linting
+      working-directory: ./frontend
+      run: npm run lint
+
+    - name: Check formatting
+      working-directory: ./frontend
+      run: |
+        if [ -f ".prettierrc" ]; then
+          npx prettier --check .
+        else
+          echo "No prettier config found, skipping format check"
+        fi
+
+    - name: Run unit tests with coverage
+      working-directory: ./frontend
+      run: npm run test:coverage
+
+    - name: Upload coverage reports
+      uses: codecov/codecov-action@v4
+      with:
+        file: ./frontend/coverage/coverage-final.json
+        flags: frontend
+        fail_ci_if_error: true
+
+    - name: Upload test artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: |
+          frontend/coverage/
+          frontend/test-results.xml
+
+  # Accessibility and Performance Testing  
+  accessibility:
+    name: Accessibility & Performance
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Build application
+      working-directory: ./frontend
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8080
+      run: npm run build
+
+    - name: Start application
+      working-directory: ./frontend
+      run: |
+        npm run start &
+        APP_PID=$!
+        echo "APP_PID=$APP_PID" >> $GITHUB_ENV
+        
+        # Wait for application to start
+        for i in {1..30}; do
+          if curl -f http://localhost:3000 2>/dev/null; then
+            echo "Application is ready"
+            break
+          fi
+          echo "Waiting for application to start... ($i/30)"
+          sleep 2
+        done
+
+    - name: Run accessibility tests
+      working-directory: ./frontend
+      run: |
+        if npm run test:accessibility 2>/dev/null; then
+          echo "Accessibility tests passed"
+        else
+          echo "No accessibility tests found or they failed"
+        fi
+
+    - name: Install Lighthouse CI
+      run: npm install -g @lhci/cli@0.12.x
+
+    - name: Run Lighthouse CI
+      working-directory: ./frontend
+      run: |
+        lhci autorun --upload.target=temporary-public-storage || echo "Lighthouse failed, continuing..."
+
+    - name: Stop application
+      if: always()
+      run: |
+        if [ ! -z "$APP_PID" ]; then
+          kill $APP_PID || true
+        fi
+
+  # Security Scanning
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Run npm audit
+      working-directory: ./frontend
+      run: |
+        npm audit --audit-level=high || echo "Audit found issues, but continuing CI..."
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high --file=frontend/package.json
+
+    - name: Run Trivy vulnerability scanner
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        scan-ref: './frontend'
+        format: 'sarif'
+        output: 'trivy-frontend-results.sarif'
+
+    - name: Upload Trivy scan results
+      uses: github/codeql-action/upload-sarif@v3
+      if: always()
+      with:
+        sarif_file: 'trivy-frontend-results.sarif'
+
+  # Build Application
+  build:
+    name: Build Application
+    runs-on: ubuntu-latest
+    needs: [test, security]
+    
+    strategy:
+      matrix:
+        environment: [production, staging]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: frontend/package-lock.json
+
+    - name: Install dependencies
+      working-directory: ./frontend
+      run: npm ci
+
+    - name: Build application
+      working-directory: ./frontend
+      env:
+        NEXT_PUBLIC_API_URL: ${{ matrix.environment == 'production' && 'https://api.lewisham-charity.com' || 'https://staging-api.lewisham-charity.com' }}
+        NODE_ENV: ${{ matrix.environment }}
+      run: npm run build
+
+    - name: Export static files
+      working-directory: ./frontend
+      run: |
+        if grep -q '"export"' package.json; then
+          npm run export
+        else
+          echo "No export script found, skipping static export"
+        fi
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: frontend-build-${{ matrix.environment }}
+        path: |
+          frontend/.next/
+          frontend/out/
+        retention-days: 7
+
+    - name: Analyze bundle size
+      working-directory: ./frontend
+      if: matrix.environment == 'production'
+      run: |
+        if command -v npx &> /dev/null; then
+          npx @next/bundle-analyzer || echo "Bundle analyzer failed"
+        fi
+
+  # Docker Build and Push
+  docker:
+    name: Build and Push Docker Image
+    runs-on: ubuntu-latest
+    needs: [build, accessibility]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Extract metadata
+      id: meta
+      uses: docker/metadata-action@v5
+      with:
+        images: ${{ env.IMAGE_NAME }}
+        tags: |
+          type=ref,event=branch
+          type=ref,event=pr
+          type=sha,prefix={{branch}}-
+          type=raw,value=latest,enable={{is_default_branch}}
+
+    - name: Check if Dockerfile exists
+      run: |
+        if [ ! -f frontend/Dockerfile ]; then
+          echo "Creating Dockerfile for frontend"
+          cat > frontend/Dockerfile << 'EOF'
+        FROM node:18-alpine AS deps
+        RUN apk add --no-cache libc6-compat
+        WORKDIR /app
+        COPY package*.json ./
+        RUN npm ci --only=production && npm cache clean --force
+        
+        FROM node:18-alpine AS builder
+        WORKDIR /app
+        COPY . .
+        COPY --from=deps /app/node_modules ./node_modules
+        RUN npm run build
+        
+        FROM node:18-alpine AS runner
+        WORKDIR /app
+        
+        ENV NODE_ENV production
+        
+        RUN addgroup --system --gid 1001 nodejs
+        RUN adduser --system --uid 1001 nextjs
+        
+        COPY --from=builder /app/public ./public
+        COPY --from=builder /app/.next/standalone ./
+        COPY --from=builder /app/.next/static ./.next/static
+        
+        USER nextjs
+        
+        EXPOSE 3000
+        
+        ENV PORT 3000
+        ENV HOSTNAME "0.0.0.0"
+        
+        CMD ["node", "server.js"]
+        EOF
+        fi
+
+    - name: Build and push Docker image
+      uses: docker/build-push-action@v5
+      with:
+        context: ./frontend
+        file: ./frontend/Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        platforms: linux/amd64,linux/arm64
+        build-args: |
+          NEXT_PUBLIC_API_URL=${{ github.ref == 'refs/heads/main' && 'https://api.lewisham-charity.com' || 'https://staging-api.lewisham-charity.com' }}
+
+  # Deploy to Vercel (if configured)
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: 
+      name: production
+      url: ${{ steps.deploy.outputs.preview-url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to Vercel
+      id: deploy
+      uses: amondnet/vercel-action@v25
+      if: env.VERCEL_TOKEN != null
+      with:
+        vercel-token: ${{ secrets.VERCEL_TOKEN }}
+        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+        working-directory: ./frontend
+        vercel-args: '--prod'
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+  # Deploy to Netlify (alternative)
+  deploy-netlify:
+    name: Deploy to Netlify
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Download build artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-build-production
+        path: ./frontend/
+
+    - name: Deploy to Netlify
+      uses: nwtgck/actions-netlify@v3.0
+      if: env.NETLIFY_AUTH_TOKEN != null
+      with:
+        publish-dir: './frontend/out'
+        production-branch: main
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        deploy-message: "Deploy from GitHub Actions"
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}

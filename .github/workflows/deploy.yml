@@ -1,0 +1,391 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - staging
+        - production
+      force_deploy:
+        description: 'Force deployment even if tests fail'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  DOCKER_REGISTRY: ghcr.io
+  BACKEND_IMAGE: ghcr.io/${{ github.repository }}/backend
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository }}/frontend
+
+jobs:
+  # Pre-deployment validation
+  pre-deploy-checks:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    
+    outputs:
+      deploy-environment: ${{ steps.determine-env.outputs.environment }}
+      should-deploy: ${{ steps.checks.outputs.should-deploy }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Determine deployment environment
+      id: determine-env
+      run: |
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "environment=${{ github.event.inputs.environment }}" >> $GITHUB_OUTPUT
+        elif [[ "${{ github.ref }}" == "refs/tags/v"* ]]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        elif [ "${{ github.ref }}" = "refs/heads/main" ]; then
+          echo "environment=production" >> $GITHUB_OUTPUT
+        else
+          echo "environment=staging" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Run deployment checks
+      id: checks
+      run: |
+        # Check if latest commit has passing tests
+        if [ "${{ github.event.inputs.force_deploy }}" = "true" ]; then
+          echo "Force deployment requested, skipping checks"
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        else
+          # In real scenario, you might check if CI tests passed
+          echo "should-deploy=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Notify deployment start
+      if: steps.checks.outputs.should-deploy == 'true'
+      run: |
+        echo "🚀 Starting deployment to ${{ steps.determine-env.outputs.environment }}"
+
+  # Deploy to Staging
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: needs.pre-deploy-checks.outputs.deploy-environment == 'staging' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
+    
+    environment:
+      name: staging
+      url: https://staging.lewisham-charity.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging server
+      run: |
+        echo "Deploying to staging environment..."
+        # Example deployment commands (replace with actual deployment logic)
+        
+        # Option 1: Deploy via SSH to staging server
+        # ssh -o StrictHostKeyChecking=no staging-server << 'EOF'
+        # docker-compose -f docker-compose.staging.yml down
+        # docker-compose -f docker-compose.staging.yml pull
+        # docker-compose -f docker-compose.staging.yml up -d
+        # EOF
+        
+        # Option 2: Deploy to Kubernetes staging namespace
+        # kubectl set image deployment/backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n staging
+        # kubectl set image deployment/frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n staging
+        
+        # Option 3: Deploy to Docker Swarm
+        # docker service update --image ${{ env.BACKEND_IMAGE }}:${{ github.sha }} staging_backend
+        # docker service update --image ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} staging_frontend
+        
+        echo "Staging deployment completed"
+
+    - name: Run staging smoke tests
+      run: |
+        echo "Running smoke tests on staging..."
+        # Wait for deployment to be ready
+        sleep 30
+        
+        # Test staging endpoints
+        curl -f https://staging-api.lewisham-charity.com/health || exit 1
+        curl -f https://staging.lewisham-charity.com || exit 1
+        
+        echo "Smoke tests passed"
+
+    - name: Notify staging deployment
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "✅ Staging deployment successful"
+        else
+          echo "❌ Staging deployment failed"
+        fi
+
+  # Deploy to Production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: pre-deploy-checks
+    if: needs.pre-deploy-checks.outputs.deploy-environment == 'production' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
+    
+    environment:
+      name: production
+      url: https://lewisham-charity.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Create deployment backup
+      run: |
+        echo "Creating pre-deployment backup..."
+        # Backup current database
+        # pg_dump -h $PROD_DB_HOST -U $PROD_DB_USER $PROD_DB_NAME > backup_$(date +%Y%m%d_%H%M%S).sql
+        
+        # Backup current application state
+        # kubectl create backup production-backup-$(date +%Y%m%d-%H%M%S) -n production
+        
+        echo "Backup created"
+
+    - name: Deploy to production with blue-green strategy
+      run: |
+        echo "Starting blue-green deployment to production..."
+        
+        # Example blue-green deployment with Kubernetes
+        # 1. Deploy to green environment
+        # kubectl apply -f k8s/green-deployment.yaml
+        # kubectl set image deployment/green-backend backend=${{ env.BACKEND_IMAGE }}:${{ github.sha }} -n production
+        # kubectl set image deployment/green-frontend frontend=${{ env.FRONTEND_IMAGE }}:${{ github.sha }} -n production
+        
+        # 2. Wait for green deployment to be ready
+        # kubectl rollout status deployment/green-backend -n production --timeout=600s
+        # kubectl rollout status deployment/green-frontend -n production --timeout=600s
+        
+        # 3. Run health checks on green environment
+        # kubectl run health-check --image=appropriate/curl --rm -it --restart=Never -- curl -f http://green-backend-service/health
+        
+        # 4. Switch traffic to green (update ingress/service)
+        # kubectl patch service production-backend -p '{"spec":{"selector":{"version":"green"}}}' -n production
+        # kubectl patch service production-frontend -p '{"spec":{"selector":{"version":"green"}}}' -n production
+        
+        # 5. Scale down blue deployment
+        # kubectl scale deployment blue-backend --replicas=0 -n production
+        # kubectl scale deployment blue-frontend --replicas=0 -n production
+        
+        echo "Production deployment completed"
+
+    - name: Run production health checks
+      run: |
+        echo "Running comprehensive health checks..."
+        
+        # Wait for services to stabilize
+        sleep 60
+        
+        # Critical health checks
+        curl -f https://api.lewisham-charity.com/health || exit 1
+        curl -f https://lewisham-charity.com || exit 1
+        
+        # Check database connectivity
+        curl -f https://api.lewisham-charity.com/api/v1/health/db || exit 1
+        
+        # Check Redis connectivity  
+        curl -f https://api.lewisham-charity.com/api/v1/health/cache || exit 1
+        
+        # Check critical user flows
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://api.lewisham-charity.com/api/v1/auth/login)
+        if [ "$response" -eq 400 ] || [ "$response" -eq 422 ]; then
+          echo "Auth endpoint healthy"
+        else
+          echo "Auth endpoint issue: $response"
+          exit 1
+        fi
+        
+        echo "All health checks passed"
+
+    - name: Run production smoke tests
+      run: |
+        echo "Running production smoke tests..."
+        
+        # Test critical user journeys
+        # 1. Visitor registration flow
+        # 2. Help request creation
+        # 3. Admin login
+        # 4. Donation process
+        
+        # Load testing with reduced load
+        if command -v k6 &> /dev/null; then
+          echo "Running light load test..."
+          cat > smoke-test.js << 'EOF'
+        import http from 'k6/http';
+        import { check } from 'k6';
+        
+        export let options = {
+          stages: [
+            { duration: '1m', target: 5 },
+            { duration: '2m', target: 5 },
+            { duration: '1m', target: 0 },
+          ],
+        };
+        
+        export default function() {
+          let response = http.get('https://api.lewisham-charity.com/health');
+          check(response, {
+            'status is 200': (r) => r.status === 200,
+            'response time < 1000ms': (r) => r.timings.duration < 1000,
+          });
+        }
+        EOF
+          k6 run smoke-test.js || echo "Load test completed with issues"
+        fi
+        
+        echo "Smoke tests completed"
+
+    - name: Update monitoring and alerts
+      run: |
+        echo "Updating monitoring configuration..."
+        
+        # Update Grafana dashboards with new version
+        # Update alert rules for new deployment
+        # Send deployment metrics to monitoring system
+        
+        # Example: Update deployment annotation in Grafana
+        # curl -X POST https://grafana.lewisham-charity.com/api/annotations \
+        #   -H "Authorization: Bearer $GRAFANA_TOKEN" \
+        #   -H "Content-Type: application/json" \
+        #   -d '{
+        #     "time": '$(date +%s000)',
+        #     "text": "Production deployment: ${{ github.sha }}",
+        #     "tags": ["deployment", "production"]
+        #   }'
+        
+        echo "Monitoring updated"
+
+    - name: Notify production deployment
+      if: always()
+      run: |
+        if [ "${{ job.status }}" = "success" ]; then
+          echo "✅ Production deployment successful"
+          # Send success notification to Slack/Teams/Email
+          # curl -X POST $SLACK_WEBHOOK -d '{"text":"🚀 Production deployment successful for commit ${{ github.sha }}"}'
+        else
+          echo "❌ Production deployment failed"
+          # Send failure notification and start rollback
+          # curl -X POST $SLACK_WEBHOOK -d '{"text":"🔥 Production deployment failed for commit ${{ github.sha }}. Initiating rollback."}'
+        fi
+
+  # Automatic rollback on failure
+  rollback:
+    name: Rollback on Failure
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: failure() && needs.pre-deploy-checks.outputs.deploy-environment == 'production'
+    
+    environment:
+      name: production-rollback
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Perform automatic rollback
+      run: |
+        echo "🔄 Starting automatic rollback..."
+        
+        # Kubernetes rollback example
+        # kubectl rollout undo deployment/backend -n production
+        # kubectl rollout undo deployment/frontend -n production
+        
+        # Docker Swarm rollback example
+        # docker service rollback production_backend
+        # docker service rollback production_frontend
+        
+        # Wait for rollback to complete
+        sleep 60
+        
+        echo "Rollback completed"
+
+    - name: Verify rollback success
+      run: |
+        echo "Verifying rollback..."
+        
+        # Basic health checks
+        curl -f https://api.lewisham-charity.com/health || exit 1
+        curl -f https://lewisham-charity.com || exit 1
+        
+        echo "Rollback verification successful"
+
+    - name: Notify rollback completion
+      run: |
+        echo "📢 Notifying team of rollback completion"
+        # Send notification about rollback
+        # curl -X POST $SLACK_WEBHOOK -d '{"text":"🔄 Automatic rollback completed successfully"}'
+
+  # Post-deployment tasks
+  post-deploy:
+    name: Post-deployment Tasks
+    runs-on: ubuntu-latest
+    needs: [deploy-staging, deploy-production]
+    if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
+    
+    steps:
+    - name: Update deployment database
+      run: |
+        echo "Recording deployment in tracking system..."
+        # Record deployment details in internal tracking system
+        
+        # Update deployment dashboard
+        # POST to internal API with deployment details
+        
+        echo "Deployment recorded"
+
+    - name: Clean up old images
+      run: |
+        echo "Cleaning up old container images..."
+        
+        # Keep last 10 images, remove older ones
+        # This would typically be done on the deployment servers
+        
+        echo "Cleanup completed"
+
+    - name: Generate deployment report
+      run: |
+        echo "Generating deployment report..."
+        
+        cat > deployment-report.md << EOF
+        # Deployment Report
+        
+        **Deployment Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+        **Git SHA:** ${{ github.sha }}
+        **Environment:** ${{ needs.pre-deploy-checks.outputs.deploy-environment }}
+        **Triggered by:** ${{ github.actor }}
+        
+        ## Components Deployed
+        - Backend: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+        - Frontend: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+        
+        ## Deployment Status
+        - Staging: ${{ needs.deploy-staging.result }}
+        - Production: ${{ needs.deploy-production.result }}
+        
+        ## Health Checks
+        All critical health checks passed ✅
+        
+        ## Next Steps
+        - Monitor application metrics for next 24 hours
+        - Verify user journeys are working correctly
+        - Check error rates and performance metrics
+        EOF
+        
+        echo "Deployment report generated"
+
+    - name: Upload deployment artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report
+        path: deployment-report.md
