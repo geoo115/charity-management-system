@@ -357,8 +357,15 @@ func (fus *FileUploadService) DeleteFile(fileID uint, userID uint) error {
 
 	// Check if user owns the file or is admin
 	if document.UserID != userID {
-		// TODO: Add admin role check
-		return fmt.Errorf("unauthorized to delete this file")
+		// Check if user has admin role
+		var user models.User
+		if err := fus.db.Select("role").Where("id = ?", userID).First(&user).Error; err != nil {
+			return fmt.Errorf("failed to verify user permissions")
+		}
+
+		if user.Role != "Admin" {
+			return fmt.Errorf("unauthorized to delete this file")
+		}
 	}
 
 	// Delete physical file

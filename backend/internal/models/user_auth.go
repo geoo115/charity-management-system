@@ -209,3 +209,29 @@ func (v *Verification) IsExpired() bool {
 func (v *Verification) CanAttempt() bool {
 	return v.AttemptCount < v.MaxAttempts && !v.IsExpired()
 }
+
+// EmailVerificationToken represents email verification tokens
+type EmailVerificationToken struct {
+	ID        uint      `gorm:"primarykey" json:"id"`
+	Token     string    `json:"token" gorm:"uniqueIndex;not null"`
+	Email     string    `json:"email" gorm:"index;not null"`
+	UserID    uint      `json:"user_id" gorm:"index"`
+	IsUsed    bool      `json:"is_used" gorm:"default:false"`
+	ExpiresAt time.Time `json:"expires_at"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
+	User User `json:"user" gorm:"foreignKey:UserID"`
+}
+
+// TokenBlacklist represents blacklisted JWT tokens
+type TokenBlacklist struct {
+	ID            uint      `gorm:"primarykey" json:"id"`
+	Token         string    `json:"token" gorm:"uniqueIndex;not null"`
+	BlacklistedAt time.Time `json:"blacklisted_at"`
+	Reason        string    `json:"reason"`
+	UserID        uint      `json:"user_id,omitempty" gorm:"index"`
+	CreatedAt     time.Time `json:"created_at"`
+
+	User User `json:"user,omitempty" gorm:"foreignKey:UserID"`
+}

@@ -1,15 +1,12 @@
 package routes
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
-	"golang.org/x/text/language"
 
 	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
 	"github.com/geoo115/charity-management-system/internal/middleware"
@@ -101,39 +98,8 @@ func (rm *RouteManager) Setup() error {
 
 // initializeSystem initializes system components required for routing
 func (rm *RouteManager) initializeSystem() error {
-	// Initialize internationalization
-	if err := rm.setupInternationalization(); err != nil {
-		log.Printf("Warning: Failed to initialize i18n: %v", err)
-		// Don't fail setup for i18n issues
-	}
-
 	// Configure development-specific middleware
 	rm.setupDevelopmentMiddleware()
-
-	return nil
-}
-
-// setupInternationalization initializes the i18n system
-func (rm *RouteManager) setupInternationalization() error {
-	bundle := i18n.NewBundle(language.English)
-	translationsDir := "translations"
-
-	if _, err := os.Stat(translationsDir); os.IsNotExist(err) {
-		log.Printf("Creating translations directory...")
-		if err := os.MkdirAll(translationsDir, 0755); err != nil {
-			return fmt.Errorf("failed to create translations directory: %w", err)
-		}
-
-		// Create sample translation file
-		if err := rm.createSampleTranslation(translationsDir); err != nil {
-			log.Printf("Warning: Failed to create sample translation: %v", err)
-		}
-	} else if err == nil {
-		bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-		if err := rm.loadTranslations(bundle, translationsDir); err != nil {
-			return fmt.Errorf("failed to load translations: %w", err)
-		}
-	}
 
 	return nil
 }
@@ -294,52 +260,6 @@ func (rm *RouteManager) setupRealtimeRoutes() error {
 // ================================================================
 // HELPER METHODS
 // ================================================================
-
-// createSampleTranslation creates a sample translation file
-func (rm *RouteManager) createSampleTranslation(dir string) error {
-	sampleContent := `{
-		"welcome": "Welcome to Lewisham Charity",
-		"login": "Log in",
-		"register": "Register",
-		"help_request": "Request Help",
-		"donate": "Donate",
-		"volunteer": "Volunteer",
-		"admin": "Administration",
-		"dashboard": "Dashboard",
-		"profile": "Profile",
-		"settings": "Settings",
-		"notifications": "Notifications",
-		"queue": "Queue",
-		"documents": "Documents"
-	}`
-
-	return os.WriteFile(dir+"/en.json", []byte(sampleContent), 0644)
-}
-
-// loadTranslations loads translation files from the specified directory
-func (rm *RouteManager) loadTranslations(bundle *i18n.Bundle, dir string) error {
-	files, err := os.ReadDir(dir)
-	if err != nil {
-		return err
-	}
-
-	if len(files) == 0 {
-		log.Println("No translation files found")
-		return nil
-	}
-
-	// Load translation files
-	for _, file := range files {
-		if !file.IsDir() && file.Name()[len(file.Name())-5:] == ".json" {
-			_, err := bundle.LoadMessageFile(dir + "/" + file.Name())
-			if err != nil {
-				log.Printf("Warning: Failed to load translation file %s: %v", file.Name(), err)
-			}
-		}
-	}
-
-	return nil
-}
 
 // logSetupComplete logs successful route configuration
 func (rm *RouteManager) logSetupComplete() {

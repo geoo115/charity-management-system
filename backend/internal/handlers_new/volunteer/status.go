@@ -151,11 +151,34 @@ func mapUserStatusToApplicationStatus(userStatus string) string {
 }
 
 func getTrainingStatus(userID uint) string {
-	// Check if user has completed training
-	// This is a simplified check - in reality you'd check against a training records table
-	// TODO: Implement actual training status check for userID
-	_ = userID // Mark as intentionally unused for now
-	return "not_started"
+	// Check if user has completed training by looking at training records
+	var trainingRecord struct {
+		Status      string     `json:"status"`
+		CompletedAt *time.Time `json:"completed_at"`
+	}
+
+	// Query training status from database
+	err := db.DB.Table("volunteer_training").
+		Select("status, completed_at").
+		Where("user_id = ?", userID).
+		First(&trainingRecord).Error
+
+	if err != nil {
+		// No training record found, training not started
+		return "not_started"
+	}
+
+	switch trainingRecord.Status {
+	case "completed":
+		if trainingRecord.CompletedAt != nil {
+			return "completed"
+		}
+		return "in_progress"
+	case "in_progress":
+		return "in_progress"
+	default:
+		return "not_started"
+	}
 }
 
 func getNextSteps(status string) []string {

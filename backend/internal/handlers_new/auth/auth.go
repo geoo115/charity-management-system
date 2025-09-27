@@ -473,14 +473,17 @@ func Logout(c *gin.Context) {
 	}
 
 	// Add token to blacklist
-	blacklistEntry := TokenBlacklist{
+	blacklistEntry := models.TokenBlacklist{
 		Token:         token,
 		BlacklistedAt: time.Now(),
 		Reason:        "user_logout",
 	}
 
-	// TODO: Save to blacklist database
-	_ = blacklistEntry // Use the variable to avoid unused error
+	// Save to blacklist database
+	if err := db.DB.Create(&blacklistEntry).Error; err != nil {
+		log.Printf("Warning: Failed to blacklist token: %v", err)
+		// Continue with logout even if blacklisting fails
+	}
 
 	// Invalidate refresh token if provided
 	var request struct {
@@ -489,8 +492,11 @@ func Logout(c *gin.Context) {
 
 	c.ShouldBindJSON(&request)
 	if request.RefreshToken != "" {
-		// TODO: Invalidate refresh token in database
-		// db.Model(&AuthRefreshToken{}).Where("token = ?", request.RefreshToken).Update("is_active", false)
+		// Invalidate refresh token in database
+		if err := db.DB.Model(&AuthRefreshToken{}).Where("token = ?", request.RefreshToken).Update("is_active", false).Error; err != nil {
+			log.Printf("Warning: Failed to invalidate refresh token: %v", err)
+			// Continue with logout even if refresh token invalidation fails
+		}
 	}
 
 	// Clear refresh token cookie
@@ -565,11 +571,25 @@ func AuthVerifyEmail(c *gin.Context) {
 		return
 	}
 
-	// TODO: Validate verification token from database
-	// This would typically involve:
-	// 1. Looking up the token in a verification_tokens table
-	// 2. Checking if it's not expired
-	// 3. Matching it with the provided email
+	// Validate verification token from database
+	var verificationToken models.EmailVerificationToken
+	if err := db.DB.Where("token = ? AND email = ? AND expires_at > ?",
+		request.Token, request.Email, time.Now()).First(&verificationToken).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Invalid or expired verification token",
+		})
+		return
+	}
+
+	// Check if token is already used
+	if verificationToken.IsUsed {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"success": false,
+			"error":   "Verification token has already been used",
+		})
+		return
+	}
 
 	// Find user by email
 	var user models.User

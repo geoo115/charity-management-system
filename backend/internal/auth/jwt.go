@@ -22,7 +22,12 @@ func GenerateToken(userID uint, email string, role string) (string, error) {
 	// Get JWT secret from environment
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "default_secret_for_development" // Default for development
+		return "", errors.New("JWT_SECRET environment variable is required")
+	}
+
+	// Ensure minimum security for JWT secret
+	if len(jwtSecret) < 32 {
+		return "", errors.New("JWT_SECRET must be at least 32 characters for security")
 	}
 
 	// Create token with claims
@@ -50,7 +55,12 @@ func ValidateToken(tokenString string) (*TokenClaims, error) {
 	// Get JWT secret from environment
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "default_secret_for_development" // Default for development
+		return nil, errors.New("JWT_SECRET environment variable is required")
+	}
+
+	// Ensure minimum security for JWT secret
+	if len(jwtSecret) < 32 {
+		return nil, errors.New("JWT_SECRET must be at least 32 characters for security")
 	}
 
 	// Parse the token

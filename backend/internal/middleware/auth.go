@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -14,13 +15,19 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-// getJWTSecret returns the JWT secret, matching the auth package behavior
-func getJWTSecret() []byte {
+// getJWTSecret returns the JWT secret with proper validation
+func getJWTSecret() ([]byte, error) {
 	jwtSecret := os.Getenv("JWT_SECRET")
 	if jwtSecret == "" {
-		jwtSecret = "default_secret_for_development" // Default for development - matches auth package
+		return nil, errors.New("JWT_SECRET environment variable is required")
 	}
-	return []byte(jwtSecret)
+
+	// Ensure minimum security for JWT secret
+	if len(jwtSecret) < 32 {
+		return nil, errors.New("JWT_SECRET must be at least 32 characters for security")
+	}
+
+	return []byte(jwtSecret), nil
 }
 
 // Auth middleware validates JWT tokens
@@ -385,7 +392,11 @@ func RoleRequired(allowedRoles ...string) gin.HandlerFunc {
 // handleTokenAuth processes the JWT token and sets user info in the context
 func handleTokenAuth(c *gin.Context, tokenString string) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return getJWTSecret(), nil
+		secret, err := getJWTSecret()
+		if err != nil {
+			return nil, err
+		}
+		return secret, nil
 	})
 
 	if err != nil {
