@@ -668,6 +668,12 @@ export default function AdminVolunteersPage() {
                               View Details
                             </Link>
                           </DropdownMenuItem>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/admin/messages/${volunteer.id}`}>
+                              <MessageSquare className="h-4 w-4 mr-2" />
+                              Message
+                            </Link>
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           {volunteer.status === 'pending' && (
                             <>

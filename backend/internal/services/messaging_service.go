@@ -212,6 +212,13 @@ func (s *MessagingService) findOrCreateConversation(user1ID, user2ID uint) (*mod
 	return &conversation, nil
 }
 
+// CreateConversation ensures a conversation exists between two users and returns it.
+// This is an exported wrapper around findOrCreateConversation to allow handlers
+// to create conversations without creating an empty system message.
+func (s *MessagingService) CreateConversation(user1ID, user2ID uint) (*models.Conversation, error) {
+	return s.findOrCreateConversation(user1ID, user2ID)
+}
+
 // sendRealTimeNotification sends real-time notification via WebSocket
 func (s *MessagingService) sendRealTimeNotification(message *models.Message) {
 	notification := map[string]interface{}{

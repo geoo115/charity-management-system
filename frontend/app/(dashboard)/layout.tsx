@@ -5,12 +5,15 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { LoadingScreen } from '@/components/common/LoadingScreen';
 import { Header } from '@/components/layout/Header';
-import { Sidebar } from '@/components/layout/SidebarEnhanced';
-import { SimpleVisitorSidebar } from '@/components/simple/visitor-sidebar';
+import { AdminSidebar } from '@/components/layout/AdminSidebar';
+import { VisitorSidebar } from '@/components/layout/VisitorSidebar';
+import { VolunteerSidebar } from '@/components/layout/VolunteerSidebar';
+import { DonorSidebar } from '@/components/layout/DonorSidebar';
 import { MobileSidebar } from '@/components/layout/MobileSidebar';
 import { Breadcrumb } from '@/components/layout/Breadcrumb';
 import { ToastNotificationSystem } from '@/components/notifications';
 import { NotificationProvider } from '@/contexts/NotificationContext';
+import { MessagingProvider } from '@/contexts/MessagingContext';
 
 export default function DashboardLayout({
   children,
@@ -48,25 +51,32 @@ export default function DashboardLayout({
     return null; // Will redirect in the useEffect
   }
 
+  // Function to render the appropriate sidebar based on user role
+  const renderSidebar = () => {
+    if (!user) return null;
+
+    switch (user.role) {
+      case 'Admin':
+        return <AdminSidebar user={user} open={sidebarOpen} setOpen={setSidebarOpen} />;
+      case 'Visitor':
+        return <VisitorSidebar user={user} open={sidebarOpen} setOpen={setSidebarOpen} />;
+      case 'Volunteer':
+        return <VolunteerSidebar user={user} open={sidebarOpen} setOpen={setSidebarOpen} />;
+      case 'Donor':
+        return <DonorSidebar user={user} open={sidebarOpen} setOpen={setSidebarOpen} />;
+      default:
+        return <AdminSidebar user={user} open={sidebarOpen} setOpen={setSidebarOpen} />;
+    }
+  };
+
   return (
     <NotificationProvider>
-      <div className="flex h-screen overflow-hidden bg-background">
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block">
-          {user?.role === 'Visitor' ? (
-            <SimpleVisitorSidebar 
-              user={user!} 
-              open={sidebarOpen} 
-              setOpen={setSidebarOpen} 
-            />
-          ) : (
-            <Sidebar 
-              user={user!} 
-              open={sidebarOpen} 
-              setOpen={setSidebarOpen} 
-            />
-          )}
-        </div>
+      <MessagingProvider>
+        <div className="flex h-screen overflow-hidden bg-background">
+          {/* Desktop Sidebar */}
+          <div className="hidden md:block">
+            {renderSidebar()}
+          </div>
         
         {/* Main Content Area */}
         <div className="flex flex-col flex-1 overflow-hidden">
@@ -91,7 +101,8 @@ export default function DashboardLayout({
         
         {/* Toast Notification System */}
         <ToastNotificationSystem />
-      </div>
+        </div>
+      </MessagingProvider>
     </NotificationProvider>
   );
 }

@@ -459,8 +459,9 @@ func GetAvailableAdmins(c *gin.Context) {
 	// Combine admins and senior volunteers
 	allRecipients := append(admins, seniorVolunteers...)
 
+	// Return under "admins" key so frontend can read `data.admins`
 	c.JSON(http.StatusOK, gin.H{
-		"data": allRecipients,
+		"admins": allRecipients,
 	})
 }
 

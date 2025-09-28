@@ -44,33 +44,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { 
-  MessageSquare, 
-  Send, 
-  Users, 
-  Mail, 
-  Bell, 
-  Calendar,
-  Filter, 
-  Search, 
-  MoreHorizontal,
-  Plus,
-  Edit,
-  Trash2,
-  Eye,
-  Copy,
-  Settings,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  Target,
-  Megaphone,
-  FileText,
-  Zap,
-  Globe,
-  Smartphone,
-  Monitor
-} from 'lucide-react';
+import { getCommunicationMessages, getCommunicationTemplates, sendBroadcastMessage, sendTargetedMessage } from '@/lib/api/admin-comprehensive';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';
@@ -155,36 +129,13 @@ export default function CommunicationsPage() {
       setLoading(true);
       
       // Fetch real communication data from API
-      const [messagesResponse, templatesResponse] = await Promise.all([
-        fetch('/api/v1/admin/communications/messages', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-        }),
-        fetch('/api/v1/admin/communications/templates', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`,
-            'Content-Type': 'application/json',
-          },
-        })
+      const [messagesData, templatesData] = await Promise.all([
+        getCommunicationMessages(),
+        getCommunicationTemplates(),
       ]);
 
-      if (messagesResponse.ok) {
-        const messagesData = await messagesResponse.json();
-        setMessages(messagesData.messages || []);
-      } else {
-        console.error('Failed to fetch messages');
-        setMessages([]);
-      }
-
-      if (templatesResponse.ok) {
-        const templatesData = await templatesResponse.json();
-        setTemplates(templatesData.templates || []);
-      } else {
-        console.error('Failed to fetch templates');
-        setTemplates([]);
-      }
+      setMessages(messagesData.messages || []);
+      setTemplates(templatesData || []);
     } catch (error: any) {
       console.error('Error loading communication data:', error);
       toast({
@@ -222,34 +173,21 @@ export default function CommunicationsPage() {
 
   const handleBroadcastSubmit = async () => {
     try {
-      // API call to send broadcast message
-      const response = await fetch('/api/v1/admin/communications/broadcast', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(broadcastForm)
+      await sendBroadcastMessage(broadcastForm);
+      toast({
+        title: 'Success',
+        description: 'Broadcast message sent successfully',
       });
-
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: 'Broadcast message sent successfully',
-        });
-        setShowBroadcastDialog(false);
-        setBroadcastForm({
-          title: '',
-          message: '',
-          type: 'info',
-          recipients: [],
-          channels: [],
-          scheduledAt: ''
-        });
-        loadCommunicationData();
-      } else {
-        throw new Error('Failed to send broadcast');
-      }
+      setShowBroadcastDialog(false);
+      setBroadcastForm({
+        title: '',
+        message: '',
+        type: 'info',
+        recipients: [],
+        channels: [],
+        scheduledAt: ''
+      });
+      loadCommunicationData();
     } catch (error: any) {
       toast({
         title: 'Error',
@@ -261,34 +199,21 @@ export default function CommunicationsPage() {
 
   const handleTargetedSubmit = async () => {
     try {
-      // API call to send targeted message
-      const response = await fetch('/api/v1/admin/communications/targeted', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify(targetedForm)
+      await sendTargetedMessage(targetedForm);
+      toast({
+        title: 'Success',
+        description: 'Targeted message sent successfully',
       });
-
-      if (response.ok) {
-        toast({
-          title: 'Success',
-          description: 'Targeted message sent successfully',
-        });
-        setShowTargetedDialog(false);
-        setTargetedForm({
-          title: '',
-          message: '',
-          recipients: [],
-          channels: [],
-          template: '',
-          scheduledAt: ''
-        });
-        loadCommunicationData();
-      } else {
-        throw new Error('Failed to send targeted message');
-      }
+      setShowTargetedDialog(false);
+      setTargetedForm({
+        title: '',
+        message: '',
+        recipients: [],
+        channels: [],
+        template: '',
+        scheduledAt: ''
+      });
+      loadCommunicationData();
     } catch (error: any) {
       toast({
         title: 'Error',

@@ -87,7 +87,6 @@ export function AdminCommunicationCenter({ isOpen, onClose }: AdminCommunication
   };
 
   const getUnreadCount = (conversation: Conversation) => {
-    // For now, return 1 if last message is unread and not from admin
     if (conversation.last_message && 
         !conversation.last_message.is_read && 
         conversation.last_message.sender_role !== 'admin') {
@@ -228,10 +227,19 @@ export function AdminCommunicationCenter({ isOpen, onClose }: AdminCommunication
       const response = await authenticatedFetch(`/api/v1/admin/volunteers/${volunteerId}/messages`);
       if (response?.ok) {
         const data = await response.json();
-        setMessages(data.messages || []);
+        const updatedMessages = (data.messages || []).map((message: Message) => ({ ...message, is_read: true }));
+        setMessages(updatedMessages);
         
-        // Note: Admin doesn't have a "mark as read" endpoint yet
-        // This could be implemented in the future if needed
+        // Update the conversation in the list to mark it as read
+        setConversations(prev => prev.map(conv => {
+          if (getVolunteerId(conv) === volunteerId) {
+            return {
+              ...conv,
+              last_message: conv.last_message ? { ...conv.last_message, is_read: true } : null
+            };
+          }
+          return conv;
+        }));
       }
     } catch (error) {
       console.error('Error fetching messages:', error);

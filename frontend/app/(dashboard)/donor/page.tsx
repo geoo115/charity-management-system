@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
+import { DonorCommunicationQuickAccess, DonorCommunicationFloatingButton } from '@/components/donor/communication-center';
 import { 
   Card, 
   CardContent, 
@@ -128,6 +129,7 @@ export default function DonorDashboard() {
           </div>
         </div>
         <div className="flex flex-wrap gap-2 mt-4 md:mt-0">
+          <DonorCommunicationQuickAccess />
           <Button asChild className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700">
             <Link href="/donor/donate/monetary">
               <BanknoteIcon className="h-4 w-4 mr-2" />
@@ -454,6 +456,9 @@ export default function DonorDashboard() {
           </CardFooter>
         </Card>
       </motion.div>
+      
+      {/* Floating Communication Button */}
+      <DonorCommunicationFloatingButton />
     </div>
   );
 }

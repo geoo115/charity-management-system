@@ -188,14 +188,14 @@ func GetVolunteerConversation(c *gin.Context) {
 		}
 	}
 
-	// If no conversation exists, create one by sending a system message
+	// If no conversation exists, create one without creating an empty system message
 	if conversationID == 0 {
-		message, err := messagingService.SendMessage(adminID, uint(volunteerID), "", "system", "", "")
+		conv, err := messagingService.CreateConversation(adminID, uint(volunteerID))
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create conversation"})
 			return
 		}
-		conversationID = message.ConversationID
+		conversationID = conv.ID
 	}
 
 	// Get messages for the conversation

@@ -163,9 +163,16 @@ export default function AdminHelpRequestsPage() {
         limit: 20,
         ...filters,
       });
-      setHelpRequests(response.data);
-      setTotalRequests(response.pagination?.total || 0);
+      if (response && response.data) {
+        setHelpRequests(response.data);
+        setTotalRequests(response.pagination?.total || 0);
+      } else {
+        setHelpRequests([]);
+        setTotalRequests(0);
+      }
     } catch (error: any) {
+      setHelpRequests([]);
+      setTotalRequests(0);
       toast({
         title: 'Error',
         description: 'Failed to load help requests',
@@ -274,7 +281,7 @@ export default function AdminHelpRequestsPage() {
       setBulkSelection([]);
       setSelectAll(false);
     } else {
-      setBulkSelection(helpRequests.map(req => req.id));
+      setBulkSelection(helpRequests ? helpRequests.map(req => req.id) : []);
       setSelectAll(true);
     }
   };
@@ -287,14 +294,14 @@ export default function AdminHelpRequestsPage() {
         return newSelection;
       } else {
         const newSelection = [...prev, id];
-        if (newSelection.length === helpRequests.length) setSelectAll(true);
+        if (newSelection.length === (helpRequests ? helpRequests.length : 0)) setSelectAll(true);
         return newSelection;
       }
     });
   };
 
   const exportData = () => {
-    if (!helpRequests.length) return;
+    if (!helpRequests || !helpRequests.length) return;
     
     const csvData = helpRequests.map(req => ({
       reference: req.reference,
@@ -381,7 +388,7 @@ export default function AdminHelpRequestsPage() {
             <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             {refreshing ? 'Refreshing...' : 'Refresh'}
           </Button>
-          <Button variant="outline" onClick={exportData} disabled={!helpRequests.length}>
+          <Button variant="outline" onClick={exportData} disabled={!helpRequests || !helpRequests.length}>
             <Download className="h-4 w-4 mr-2" />
             Export CSV
           </Button>
@@ -417,7 +424,7 @@ export default function AdminHelpRequestsPage() {
             <div className="flex items-center justify-between">
               <span className="text-sm">Urgent detection</span>
               <Badge variant="destructive">
-                {helpRequests.filter(req => req.priority === 'emergency').length} urgent
+                {Array.isArray(helpRequests) ? helpRequests.filter(req => req.priority === 'emergency').length : 0} urgent
               </Badge>
             </div>
             <div className="flex items-center justify-between">
@@ -521,7 +528,7 @@ export default function AdminHelpRequestsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-700">
-              {Array.isArray(helpRequests) ? helpRequests.filter(req => req.status === 'approved' || req.status === 'ticket_issued').length : 0}
+                            {Array.isArray(helpRequests) ? helpRequests.filter(req => req.status === 'approved' || req.status === 'ticket_issued').length : 0}
             </div>
             <p className="text-xs text-muted-foreground">Approved requests</p>
           </CardContent>
@@ -644,7 +651,7 @@ export default function AdminHelpRequestsPage() {
             <FileText className="h-5 w-5" />
             Help Requests ({totalRequests})
           </CardTitle>
-          {helpRequests.length > 0 && (
+          {helpRequests && helpRequests.length > 0 && (
             <div className="flex items-center gap-2">
               <Checkbox
                 checked={selectAll}

@@ -472,18 +472,43 @@ func getRequiredEquipment(role string) string {
 
 // seedUsers creates a diverse set of users with different roles
 func seedUsers(db *gorm.DB) error {
-	// Check if users already exist (excluding admin)
+	// Check if seeded users already exist (excluding the default admin from defaults.go)
 	var count int64
-	if err := db.Model(&models.User{}).Where("role != ?", models.RoleAdmin).Count(&count).Error; err != nil {
+	if err := db.Model(&models.User{}).Where("email NOT IN (?)", []string{"admin@lewisham-hub.org"}).Count(&count).Error; err != nil {
 		return err
 	}
 
 	if count > 0 {
-		log.Println("Users already exist, skipping user seeding")
+		log.Println("Seeded users already exist, skipping user seeding")
 		return nil
 	}
 
 	users := []models.User{
+		// Admin Users
+		{
+			FirstName:     "Administrator",
+			LastName:      "System",
+			Email:         "admin@lewisham-hub.org",
+			Phone:         "07000000001",
+			Role:          models.RoleAdmin,
+			Status:        models.StatusActive,
+			Address:       "1 Admin Way",
+			City:          "London",
+			Postcode:      "SE13 1AA",
+			EmailVerified: true,
+		},
+		{
+			FirstName:     "Deputy",
+			LastName:      "Administrator",
+			Email:         "deputy.admin@lewisham-hub.org",
+			Phone:         "07000000002",
+			Role:          models.RoleAdmin,
+			Status:        models.StatusActive,
+			Address:       "2 Admin Way",
+			City:          "London",
+			Postcode:      "SE13 1AB",
+			EmailVerified: true,
+		},
 		// Visitors
 		{
 			FirstName:     "Sarah",

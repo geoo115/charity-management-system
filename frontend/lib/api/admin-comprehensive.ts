@@ -30,6 +30,30 @@ const handleResponse = async (response: Response) => {
 // TYPE DEFINITIONS
 // ================================
 
+// Minimal types used by communications APIs
+export interface CommunicationMessage {
+  id: number;
+  subject?: string;
+  content: string;
+  sender_id?: number;
+  recipient_id?: number;
+  status?: string;
+  message_type?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MessageTemplate {
+  id: number;
+  name: string;
+  subject?: string;
+  body: string;
+  channel?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+
 export interface AdminDashboard {
   kpis: {
     today_requests: number;
@@ -927,6 +951,92 @@ export const bulkRespondToFeedback = async (data: {
   return await response.json();
 };
 
+/**
+ * Get volunteer conversation by volunteer ID
+ */
+export const getVolunteerConversation = async (volunteerId: number): Promise<any> => {
+  const response = await apiClient.get(`/api/v1/admin/volunteers/${volunteerId}/messages`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+  }
+
+  return await response.json();
+};
+
+/**
+ * Send broadcast message
+ */
+export const sendBroadcastMessage = async (data: any): Promise<any> => {
+  const response = await apiClient.post('/api/v1/admin/communications/broadcast', data);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to send broadcast message');
+  }
+
+  return await response.json();
+};
+
+/**
+ * Send targeted message
+ */
+export const sendTargetedMessage = async (data: any): Promise<any> => {
+  const response = await apiClient.post('/api/v1/admin/communications/targeted', data);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to send targeted message');
+  }
+
+  return await response.json();
+};
+
+/**
+ * Get communication messages with filtering and pagination
+ */
+export const getCommunicationMessages = async (params: {
+  status?: string;
+  page?: number;
+  per_page?: number;
+  type?: string;
+} = {}): Promise<{
+  messages: CommunicationMessage[];
+  total: number;
+  page: number;
+  per_page: number;
+}> => {
+  const searchParams = new URLSearchParams();
+  if (params.status) searchParams.append('status', params.status);
+  if (params.page) searchParams.append('page', params.page.toString());
+  if (params.per_page) searchParams.append('per_page', params.per_page.toString());
+  if (params.type) searchParams.append('type', params.type);
+
+  const response = await apiClient.get(`/api/v1/admin/communications/messages?${searchParams}`);
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to fetch communication messages');
+  }
+
+  return await response.json();
+};
+
+/**
+ * Get communication templates
+ */
+export const getCommunicationTemplates = async (): Promise<MessageTemplate[]> => {
+  const response = await apiClient.get('/api/v1/admin/communications/templates');
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || 'Failed to fetch communication templates');
+  }
+
+  return await response.json();
+};
+
 // ================================
 // ANALYTICS & REPORTS APIs
 // ================================
@@ -1238,7 +1348,7 @@ export const downloadDocument = async (id: number): Promise<Blob> => {
  * Get volunteer by ID
  */
 export const getVolunteer = async (id: number): Promise<Volunteer> => {
-  const response = await fetch(`${API_BASE_URL}/api/v1/admin/volunteers/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/v1/admin/users/${id}`, {
     headers: getAuthHeaders(),
   });
 
