@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -78,6 +79,13 @@ func ValidateToken(tokenString string) (*TokenClaims, error) {
 
 	// Validate claims
 	if claims, ok := token.Claims.(*TokenClaims); ok && token.Valid {
+		// Check blacklist (Redis). If Redis is not configured this is a no-op.
+		if blacklisted, err := IsTokenBlacklisted(context.Background(), tokenString); err != nil {
+			return nil, fmt.Errorf("failed to check token blacklist: %w", err)
+		} else if blacklisted {
+			return nil, errors.New("token has been revoked")
+		}
+
 		return claims, nil
 	}
 

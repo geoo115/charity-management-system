@@ -10,7 +10,7 @@ import (
 func SetupPaymentRoutes(router *gin.Engine, jwtSecret string) {
 	// Payment routes with authentication
 	paymentRoutes := router.Group("/api/v1/payments")
-	paymentRoutes.Use(middleware.AuthMiddleware(jwtSecret))
+	paymentRoutes.Use(middleware.AuthMiddleware())
 	{
 		// Payment intents
 		paymentRoutes.POST("/create-intent", payments.CreatePaymentIntent)
@@ -27,10 +27,16 @@ func SetupPaymentRoutes(router *gin.Engine, jwtSecret string) {
 
 	// Admin-only payment routes
 	adminPaymentRoutes := router.Group("/api/v1/admin/payments")
-	adminPaymentRoutes.Use(middleware.AuthMiddleware(jwtSecret))
+	adminPaymentRoutes.Use(middleware.AuthMiddleware())
 	adminPaymentRoutes.Use(func(c *gin.Context) {
 		userRole, exists := c.Get("userRole")
-		if !exists || userRole != "Admin" {
+		roleStr := ""
+		if exists {
+			if rs, ok := userRole.(string); ok {
+				roleStr = rs
+			}
+		}
+		if roleStr != "Admin" {
 			c.JSON(403, gin.H{"error": "Admin access required"})
 			c.Abort()
 			return

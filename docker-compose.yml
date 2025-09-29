@@ -58,8 +58,10 @@ services:
     image: dpage/pgadmin4:latest
     container_name: charity_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@charity.local
-      PGADMIN_DEFAULT_PASSWORD: admin123
+      # Set these via environment variables or an .env file for local development.
+      # Do NOT commit real credentials into source control.
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@charity.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-changeme}
     ports:
       - "8082:80"
     depends_on:

@@ -116,9 +116,12 @@ npm run dev
 *Deployed on Render with free hosting*
 
 ### Demo Accounts
-- **Admin**: `admin@charity.org` / `admin123`  
-- **Volunteer**: `volunteer@charity.org` / `volunteer123`
-- **Donor**: `donor@charity.org` / `donor123`
+For security reasons demo credentials are not included in the repository. To create demo accounts for local development:
+
+- Create users via the admin setup script or using the database seed utilities (see `backend/README.md`).
+- Or set credentials via environment variables and/or a local .env file (do not commit secrets).
+
+Example (local development only): set an admin user with environment variables or run the provided setup script to create one-time demo users. Never commit passwords to source control.
 
 ## 🔧 Deployment
 
@@ -144,7 +147,7 @@ make observability-setup
 
 **Monitoring Services:**
 - **[Prometheus](http://localhost:9090)** - Metrics collection and alerting
-- **[Grafana](http://localhost:3001)** - Dashboards and visualization (admin/admin123)
+- **[Grafana](http://localhost:3001)** - Dashboards and visualization (configure an admin user via environment variables; do not commit passwords)
 - **[Jaeger](http://localhost:16686)** - Distributed tracing and debugging
 - **[AlertManager](http://localhost:9093)** - Alert management and notifications
 

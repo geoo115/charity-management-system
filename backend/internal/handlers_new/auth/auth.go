@@ -984,7 +984,15 @@ func generateSecureToken(length int) (string, error) {
 
 // GetJWTSecret returns the JWT secret from environment or a default value
 func GetJWTSecret() string {
-	secret := getenv("JWT_SECRET", "default_secret_for_development_only")
+	secret := getEnv("JWT_SECRET")
+	if secret == "" {
+		// Fallback for quick local development only - log a clear warning so it is not overlooked
+		log.Printf("WARNING: JWT_SECRET is not set. Using insecure default secret for development only. Set JWT_SECRET in your environment for production.")
+		return "default_secret_for_development_only"
+	}
+	if len(secret) < 32 {
+		log.Printf("WARNING: JWT_SECRET is set but appears short (<32 characters). Use a strong secret of at least 32 characters in production.")
+	}
 	return secret
 }
 

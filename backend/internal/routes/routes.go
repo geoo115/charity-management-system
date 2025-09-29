@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	systemHandlers "github.com/geoo115/charity-management-system/internal/handlers_new/system"
+	"github.com/geoo115/charity-management-system/internal/jobs"
 	"github.com/geoo115/charity-management-system/internal/middleware"
 	"github.com/geoo115/charity-management-system/internal/services"
 )
@@ -155,9 +156,13 @@ func (rm *RouteManager) setupSecurityMiddleware() error {
 	rm.router.Use(securityValidator.ValidateRequest())
 	rm.router.Use(middleware.SanitizeInput())
 
-	// Apply global rate limiting
+	// Apply global rate limiting (prefer Redis-backed if available)
 	if rm.config.EnableRateLimit {
-		rm.router.Use(middleware.APIRateLimit())
+		if jobs.RedisClient != nil {
+			rm.router.Use(middleware.RedisAPIRateLimit())
+		} else {
+			rm.router.Use(middleware.APIRateLimit())
+		}
 	}
 
 	// Add query optimization middleware for enhanced performance

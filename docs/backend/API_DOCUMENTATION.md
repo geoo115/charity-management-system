@@ -28,6 +28,8 @@ Authorization: Bearer <your-jwt-token>
 2. **Login**: `POST /api/v1/auth/login`
 3. **Use Token**: Include in Authorization header for protected endpoints
 
+Security note: Refresh tokens should never be stored in localStorage. For improved security against XSS, use httpOnly, Secure, SameSite cookies for refresh tokens and implement refresh token rotation and server-side invalidation. The server currently supports a JSON refresh flow for compatibility but we recommend switching to cookie-based refresh in production.
+
 ## 📊 **API Categories**
 
 ### 1. **Authentication & User Management**

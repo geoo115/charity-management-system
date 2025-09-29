@@ -42,6 +42,11 @@ type User struct {
 
 // HashPassword creates a bcrypt hash of the password
 func (u *User) HashPassword() error {
+	// Validate password strength
+	if err := ValidatePassword(u.Password); err != nil {
+		return err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
@@ -57,6 +62,11 @@ func (u *User) CheckPassword(password string) error {
 
 // HashPasswordWithValue hashes a provided password value and sets it on the user
 func (u *User) HashPasswordWithValue(password string) error {
+	// Validate password strength
+	if err := ValidatePassword(password); err != nil {
+		return err
+	}
+
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return err
