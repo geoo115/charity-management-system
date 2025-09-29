@@ -109,19 +109,17 @@ npm run dev
 - **[Performance Results](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)** - Real measured performance data
 - **[Deployment Guide](./docs/performance/PRODUCTION_RECOMMENDATIONS.md)** - Production deployment best practices
 
-## �📱 Live Demo
+## �📱 Deployment Ready
 
-**🌐 [View Live Application](https://lewisham-charity-hub.onrender.com)**
+This repository is deployment-ready. Live deployment will be performed using your chosen hosting provider and configuration.
 
-*Deployed on Render with free hosting*
+Note: Live URLs and environment-specific credentials are intentionally not published here. Update the following placeholders with actual URLs after you deploy the application:
 
-### Demo Accounts
-For security reasons demo credentials are not included in the repository. To create demo accounts for local development:
+- Frontend URL: <INSERT_FRONTEND_URL>
+- Backend API URL: <INSERT_BACKEND_API_URL>
+- API Documentation (Swagger): <INSERT_SWAGGER_URL>
 
-- Create users via the admin setup script or using the database seed utilities (see `backend/README.md`).
-- Or set credentials via environment variables and/or a local .env file (do not commit secrets).
-
-Example (local development only): set an admin user with environment variables or run the provided setup script to create one-time demo users. Never commit passwords to source control.
+For local development, create demo or test accounts using the admin setup script or database seed utilities (see `backend/README.md`). Never commit credentials or secrets to source control.
 
 ## 🔧 Deployment
 
