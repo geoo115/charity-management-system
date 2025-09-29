@@ -189,6 +189,16 @@ export const VolunteerSidebar: React.FC<VolunteerSidebarProps> = ({ user: passed
   
   const user = passedUser || authUser;
 
+  // Initialize expanded state for first section
+  useEffect(() => {
+    if (volunteerSidebarSections.length > 0) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [volunteerSidebarSections[0].title]: true
+      }));
+    }
+  }, []);
+
   // Dynamic sidebar sections with messaging context
   const getSidebarSections = () => [
     {
@@ -312,6 +322,16 @@ export const VolunteerSidebar: React.FC<VolunteerSidebarProps> = ({ user: passed
     }
   ];
 
+  // Initialize expanded state for first section
+  useEffect(() => {
+    if (volunteerSidebarSections.length > 0) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [volunteerSidebarSections[0].title]: true
+      }));
+    }
+  }, []);
+
   if (!user) return null;
 
   // Toggle section expansion
@@ -329,16 +349,6 @@ export const VolunteerSidebar: React.FC<VolunteerSidebarProps> = ({ user: passed
       [itemHref]: !prev[itemHref]
     }));
   };
-
-  // Initialize expanded state for first section
-  useEffect(() => {
-    if (volunteerSidebarSections.length > 0) {
-      setExpandedSections(prev => ({
-        ...prev,
-        [volunteerSidebarSections[0].title]: true
-      }));
-    }
-  }, []);
 
   const handleLogout = async () => {
     try {

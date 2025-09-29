@@ -590,12 +590,22 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
   
   const user = passedUser || authUser;
 
-  if (!user) return null;
-
   // Filter sections by user role
   const filteredSections = sidebarSections.filter(section => 
     section.roles.includes(user.role)
   );
+
+  // Initialize expanded state for first section
+  useEffect(() => {
+    if (filteredSections.length > 0) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [filteredSections[0].title]: true
+      }));
+    }
+  }, [filteredSections]);
+
+  if (!user) return null;
 
   // Toggle section expansion
   const toggleSection = (sectionTitle: string) => {
@@ -612,16 +622,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ user: passedUser, open, setOpe
       [itemHref]: !prev[itemHref]
     }));
   };
-
-  // Initialize expanded state for first section
-  useEffect(() => {
-    if (filteredSections.length > 0) {
-      setExpandedSections(prev => ({
-        ...prev,
-        [filteredSections[0].title]: true
-      }));
-    }
-  }, [filteredSections]);
 
   const handleLogout = async () => {
     try {

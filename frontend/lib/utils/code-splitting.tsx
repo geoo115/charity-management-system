@@ -285,14 +285,14 @@ export const useCodeSplitting = () => {
       }
       
       const startTime = performance.now();
-      return importFn().then((module) => {
+      return importFn().then((mod) => {
         const loadTime = performance.now() - startTime;
         
         setLoadedModules(prev => new Set([...prev, moduleKey]));
         
         console.info(`Module ${moduleKey} loaded in ${loadTime.toFixed(2)}ms`);
         
-        return module;
+        return mod;
       });
     },
     [loadedModules]

@@ -294,6 +294,16 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user: passedUser, op
   
   const user = passedUser || authUser;
 
+  // Initialize expanded state for first section
+  useEffect(() => {
+    if (adminSidebarSections.length > 0) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [adminSidebarSections[0].title]: true
+      }));
+    }
+  }, []);
+
   if (!user) return null;
 
   // Toggle section expansion
@@ -311,16 +321,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user: passedUser, op
       [itemHref]: !prev[itemHref]
     }));
   };
-
-  // Initialize expanded state for first section
-  useEffect(() => {
-    if (adminSidebarSections.length > 0) {
-      setExpandedSections(prev => ({
-        ...prev,
-        [adminSidebarSections[0].title]: true
-      }));
-    }
-  }, []);
 
   const handleLogout = async () => {
     try {

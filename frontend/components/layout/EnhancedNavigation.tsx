@@ -55,11 +55,11 @@ const navigationLinks = [
     },
 ];
 
-const EnhancedNavigation = () => {
+const EnhancedNavigation = ({ className }: { className?: string }) => {
     const pathname = usePathname();
 
     return (
-        <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
+        <nav className={cn("grid items-start px-2 text-sm font-medium lg:px-4", className)}>
             {navigationLinks.map(({ href, icon: Icon, label, badge }) => (
                 <Link
                     key={label}

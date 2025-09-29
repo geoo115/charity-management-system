@@ -228,8 +228,8 @@ export const AdminNotificationManagement: React.FC<AdminNotificationManagementPr
     }
   };
 
-  // Use template
-  const useTemplate = (template: NotificationTemplate) => {
+  // Apply template
+  const applyTemplate = (template: NotificationTemplate) => {
     setNewNotification(prev => ({
       ...prev,
       title: template.subject,
@@ -617,7 +617,7 @@ export const AdminNotificationManagement: React.FC<AdminNotificationManagementPr
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => { useTemplate(template); }}
+                          onClick={() => applyTemplate(template)}
                         >
                           Use Template
                         </Button>

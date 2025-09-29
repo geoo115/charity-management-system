@@ -326,7 +326,7 @@ export const EnhancedForm: React.FC<EnhancedFormProps> = memo(({
   // Enhanced children with props injection
   const enhancedChildren = React.Children.map(children, (child) => {
     if (React.isValidElement(child) && child.type === FormField) {
-      const fieldName = child.props.name;
+      const fieldName = (child.props as FormFieldProps).name;
       return React.cloneElement(child as React.ReactElement<FormFieldProps>, {
         value: formData[fieldName] || '',
         onChange: (value: string) => handleFieldChange(fieldName, value),

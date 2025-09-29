@@ -189,6 +189,16 @@ export const DonorSidebar: React.FC<DonorSidebarProps> = ({ user: passedUser, op
   
   const user = passedUser || authUser;
 
+  // Initialize expanded state for first section
+  useEffect(() => {
+    if (donorSidebarSections.length > 0) {
+      setExpandedSections(prev => ({
+        ...prev,
+        [donorSidebarSections[0].title]: true
+      }));
+    }
+  }, []);
+
   if (!user) return null;
 
   // Toggle section expansion
@@ -206,16 +216,6 @@ export const DonorSidebar: React.FC<DonorSidebarProps> = ({ user: passedUser, op
       [itemHref]: !prev[itemHref]
     }));
   };
-
-  // Initialize expanded state for first section
-  useEffect(() => {
-    if (donorSidebarSections.length > 0) {
-      setExpandedSections(prev => ({
-        ...prev,
-        [donorSidebarSections[0].title]: true
-      }));
-    }
-  }, []);
 
   const handleLogout = async () => {
     try {

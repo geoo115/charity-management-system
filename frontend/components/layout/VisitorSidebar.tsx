@@ -151,16 +151,6 @@ export const VisitorSidebar: React.FC<VisitorSidebarProps> = ({ user: passedUser
   
   const user = passedUser || authUser;
 
-  if (!user) return null;
-
-  // Toggle section expansion
-  const toggleSection = (sectionTitle: string) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [sectionTitle]: !prev[sectionTitle]
-    }));
-  };
-
   // Initialize expanded state for first section
   useEffect(() => {
     if (visitorSidebarSections.length > 0) {
@@ -170,6 +160,16 @@ export const VisitorSidebar: React.FC<VisitorSidebarProps> = ({ user: passedUser
       }));
     }
   }, []);
+
+  if (!user) return null;
+
+  // Toggle section expansion
+  const toggleSection = (sectionTitle: string) => {
+    setExpandedSections(prev => ({
+      ...prev,
+      [sectionTitle]: !prev[sectionTitle]
+    }));
+  };
 
   const handleLogout = async () => {
     try {

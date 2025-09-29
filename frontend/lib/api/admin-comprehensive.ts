@@ -32,25 +32,33 @@ const handleResponse = async (response: Response) => {
 
 // Minimal types used by communications APIs
 export interface CommunicationMessage {
-  id: number;
-  subject?: string;
-  content: string;
-  sender_id?: number;
-  recipient_id?: number;
-  status?: string;
-  message_type?: string;
-  created_at?: string;
-  updated_at?: string;
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'urgent' | 'maintenance';
+  recipients: string[];
+  channels: string[];
+  status: 'draft' | 'scheduled' | 'sent' | 'failed';
+  scheduledAt?: string;
+  sentAt?: string;
+  estimatedReach: number;
+  actualReach?: number;
+  deliveryRate?: number;
+  createdBy: string;
+  createdAt: string;
 }
 
 export interface MessageTemplate {
-  id: number;
+  id: string;
   name: string;
-  subject?: string;
-  body: string;
-  channel?: string;
-  created_at?: string;
-  updated_at?: string;
+  category: string;
+  subject: string;
+  content: string;
+  variables: string[];
+  isActive: boolean;
+  usageCount: number;
+  lastUsed?: string;
+  createdAt: string;
 }
 
 

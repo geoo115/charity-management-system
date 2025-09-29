@@ -1,5 +1,6 @@
-import { AlertTriangle, Settings, MessageSquare, CheckCircle, Clock, Edit, Mail, Smartphone, Bell, Monitor, Globe, Target, Megaphone, FileText, Zap, Filter, Search, MoreHorizontal, Eye, Copy, Trash2, Users, Send } from 'lucide-react';
 'use client';
+
+import { AlertTriangle, Settings, MessageSquare, CheckCircle, Clock, Edit, Mail, Smartphone, Bell, Monitor, Globe, Target, Megaphone, FileText, Zap, Filter, Search, MoreHorizontal, Eye, Copy, Trash2, Users, Send } from 'lucide-react';
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -45,41 +46,11 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { getCommunicationMessages, getCommunicationTemplates, sendBroadcastMessage, sendTargetedMessage } from '@/lib/api/admin-comprehensive';
+import { getCommunicationMessages, getCommunicationTemplates, sendBroadcastMessage, sendTargetedMessage, CommunicationMessage, MessageTemplate } from '@/lib/api/admin-comprehensive';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { formatDistanceToNow } from 'date-fns';
-
-interface CommunicationMessage {
-  id: string;
-  title: string;
-  message: string;
-  type: 'info' | 'warning' | 'urgent' | 'maintenance';
-  recipients: string[];
-  channels: string[];
-  status: 'draft' | 'scheduled' | 'sent' | 'failed';
-  scheduledAt?: string;
-  sentAt?: string;
-  estimatedReach: number;
-  actualReach?: number;
-  deliveryRate?: number;
-  createdBy: string;
-  createdAt: string;
-}
-
-interface MessageTemplate {
-  id: string;
-  name: string;
-  category: string;
-  subject: string;
-  content: string;
-  variables: string[];
-  isActive: boolean;
-  usageCount: number;
-  lastUsed?: string;
-  createdAt: string;
-}
 
 export default function CommunicationsPage() {
   const { user } = useAuth();

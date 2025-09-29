@@ -49,7 +49,7 @@ const AvatarImage = React.forwardRef<
     const img = new Image()
     img.onload = () => setImageLoadingStatus('loaded')
     img.onerror = () => setImageLoadingStatus('error')
-    img.src = src
+    img.src = typeof src === 'string' ? src : URL.createObjectURL(src)
 
     return () => {
       img.onload = null
