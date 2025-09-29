@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/geoo115/charity-management-system/internal/observability"
@@ -87,7 +88,7 @@ func TracingMiddleware() gin.HandlerFunc {
 				span.RecordError(err.Err)
 				span.AddEvent("error", trace.WithAttributes(
 					attribute.String("error.message", err.Error()),
-					attribute.String("error.type", string(err.Type)),
+					attribute.String("error.type", fmt.Sprintf("%v", err.Type)),
 				))
 			}
 		}

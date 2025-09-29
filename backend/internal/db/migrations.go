@@ -479,6 +479,10 @@ func (mm *MigrationManager) migrateModels(db *gorm.DB) error {
 			&models.Feedback{},
 			&models.VisitFeedback{},
 			&models.UrgentNeed{},
+			// Data protection models
+			&models.Consent{},
+			&models.DataExportRequest{},
+			&models.AccountDeletionRequest{},
 		},
 		// Messaging and support models
 		{

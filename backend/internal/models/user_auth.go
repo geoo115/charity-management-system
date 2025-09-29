@@ -245,3 +245,40 @@ type TokenBlacklist struct {
 
 	User User `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }
+
+// Consent represents user consent records for processing, marketing, etc.
+type Consent struct {
+	ID        uint       `gorm:"primarykey" json:"id"`
+	UserID    uint       `gorm:"index;not null" json:"user_id"`
+	Type      string     `json:"type" gorm:"not null"` // e.g., marketing, data_processing, background_check
+	Granted   bool       `json:"granted" gorm:"default:false"`
+	GrantedAt *time.Time `json:"granted_at"`
+	Source    string     `json:"source"` // where consent was given (web, admin)
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
+}
+
+// DataExportRequest tracks user data export requests
+type DataExportRequest struct {
+	ID          uint       `gorm:"primarykey" json:"id"`
+	UserID      uint       `gorm:"index;not null" json:"user_id"`
+	RequestedAt time.Time  `json:"requested_at"`
+	CompletedAt *time.Time `json:"completed_at"`
+	Status      string     `json:"status" gorm:"default:'pending'"` // pending, processing, ready, failed
+	FilePath    string     `json:"file_path"`                       // where to find the export
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}
+
+// AccountDeletionRequest tracks deletion requests and their status
+type AccountDeletionRequest struct {
+	ID          uint       `gorm:"primarykey" json:"id"`
+	UserID      uint       `gorm:"index;not null" json:"user_id"`
+	RequestedAt time.Time  `json:"requested_at"`
+	ConfirmedAt *time.Time `json:"confirmed_at"`
+	CompletedAt *time.Time `json:"completed_at"`
+	Status      string     `json:"status" gorm:"default:'pending'"` // pending, confirmed, completed, cancelled
+	Reason      string     `json:"reason"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at"`
+}

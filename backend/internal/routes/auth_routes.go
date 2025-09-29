@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/geoo115/charity-management-system/internal/handlers_new/auth"
+	"github.com/geoo115/charity-management-system/internal/handlers_new/privacy"
 	"github.com/geoo115/charity-management-system/internal/middleware"
 )
 
@@ -30,6 +31,22 @@ func SetupAuthRoutes(r *gin.Engine) error {
 
 		// User profile access
 		authGroup.GET("/me", middleware.Auth(), auth.GetCurrentUser)
+
+		// Privacy & data protection endpoints
+		authGroup.POST("/export", middleware.Auth(), middleware.RateLimit(3, time.Minute), func(c *gin.Context) {
+			// Delegated to privacy handler
+			// using import alias to avoid cycles
+			privacy.RequestDataExport(c)
+		})
+		authGroup.GET("/export/:id/status", middleware.Auth(), privacy.GetExportStatus)
+		authGroup.GET("/export/:id/download", middleware.Auth(), privacy.DownloadExport)
+
+		// Account deletion flow
+		authGroup.POST("/delete", middleware.Auth(), middleware.RateLimit(2, time.Minute), privacy.RequestAccountDeletion)
+		authGroup.POST("/delete/:id/confirm", middleware.Auth(), middleware.RateLimit(2, time.Minute), privacy.ConfirmAccountDeletion)
+
+		// Consent management
+		authGroup.POST("/consent", middleware.Auth(), middleware.RateLimit(5, time.Minute), privacy.UpdateConsent)
 	}
 
 	// Legacy compatibility routes
