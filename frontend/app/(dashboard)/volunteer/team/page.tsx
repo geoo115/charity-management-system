@@ -7,25 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  TrendingUp, 
-  Calendar, 
-  MessageSquare, 
-  Award, 
-  Clock,
-  UserPlus,
-  Settings,
-  BarChart3,
-  Star,
-  CheckCircle,
-  AlertTriangle,
-  Plus,
-  Mail,
-  Phone,
-  MapPin,
-  Activity
-} from 'lucide-react';
+import { Users, TrendingUp, Calendar, MessageSquare, Award, Clock, UserPlus, Settings, BarChart3, Star, CheckCircle, AlertTriangle, Plus, Mail, Phone, MapPin, Activity, Send } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import TeamMeetingScheduler from '@/components/volunteer/team-meeting-scheduler';
 

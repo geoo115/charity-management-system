@@ -13,23 +13,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { 
-  UserIcon, 
-  MailIcon, 
-  PhoneIcon, 
-  MapPinIcon,
-  CreditCardIcon,
-  SettingsIcon,
-  BellIcon,
-  ShieldIcon,
-  CalendarIcon,
-  EditIcon,
-  SaveIcon,
-  TrashIcon,
-  PlusIcon,
-  CheckIcon,
-  XIcon
-} from 'lucide-react';
+import { UserIcon, MailIcon, PhoneIcon, MapPinIcon, CreditCardIcon, SettingsIcon, BellIcon, ShieldIcon, CalendarIcon, EditIcon, SaveIcon, TrashIcon, PlusIcon, CheckIcon, XIcon, Settings, Edit } from 'lucide-react';
 import { fetchDonorProfile } from '@/lib/api/donor';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';

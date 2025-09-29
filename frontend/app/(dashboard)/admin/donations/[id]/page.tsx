@@ -8,19 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { 
-  ArrowLeft, 
-  Mail, 
-  Phone, 
-  Calendar, 
-  DollarSign, 
-  CreditCard,
-  CheckCircle,
-  XCircle,
-  Download,
-  User,
-  FileText
-} from 'lucide-react';
+import { ArrowLeft, Mail, Phone, Calendar, DollarSign, CreditCard, CheckCircle, XCircle, Download, User, FileText, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { formatDistanceToNow } from 'date-fns';

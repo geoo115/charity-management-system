@@ -15,23 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { 
-  Bell, 
-  Mail, 
-  MessageSquare, 
-  Smartphone,
-  Check,
-  X,
-  Settings,
-  Shield,
-  Clock,
-  Volume2,
-  Moon,
-  Globe,
-  Save,
-  RefreshCw,
-  Info
-} from 'lucide-react';
+import { Bell, Mail, MessageSquare, Smartphone, Check, X, Settings, Shield, Clock, Volume2, Moon, Globe, Save, RefreshCw, Info, Send } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useToast } from '@/components/ui/use-toast';
 import {

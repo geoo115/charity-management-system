@@ -11,17 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { 
-  SearchIcon, 
-  DownloadIcon, 
-  FilterIcon,
-  CalendarIcon,
-  BanknoteIcon,
-  PackageIcon,
-  ReceiptIcon,
-  EyeIcon,
-  DownloadCloudIcon
-} from 'lucide-react';
+import { SearchIcon, DownloadIcon, FilterIcon, CalendarIcon, BanknoteIcon, PackageIcon, ReceiptIcon, EyeIcon, DownloadCloudIcon, Filter, Search } from 'lucide-react';
 import { fetchDonorHistory } from '@/lib/api/donor';
 import { formatDate } from '@/lib/utils/date-utils';
 import LoadingSpinner from '@/components/common/loading-spinner';

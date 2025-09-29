@@ -13,39 +13,7 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { 
-  QrCode, 
-  Users, 
-  Clock, 
-  CheckCircle, 
-  Camera, 
-  X, 
-  Fingerprint,
-  Smartphone,
-  CreditCard,
-  MapPin,
-  AlertTriangle,
-  Wifi,
-  WifiOff,
-  RefreshCw,
-  Calendar,
-  User,
-  Phone,
-  Mail,
-  Shield,
-  Zap,
-  Activity,
-  Timer,
-  Star,
-  ArrowRight,
-  Bell,
-  Settings,
-  Info,
-  CheckCircle2,
-  XCircle,
-  Clock3,
-  UserCheck
-} from 'lucide-react';
+import { QrCode, Users, Clock, CheckCircle, Camera, X, Fingerprint, Smartphone, CreditCard, MapPin, AlertTriangle, Wifi, WifiOff, RefreshCw, Calendar, User, Phone, Mail, Shield, Zap, Activity, Timer, Star, ArrowRight, Bell, Settings, Info, CheckCircle2, XCircle, Clock3, UserCheck, Send } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 const checkInSchema = z.object({

@@ -22,18 +22,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  User as UserIcon, 
-  Mail, 
-  Phone, 
-  Calendar,
-  MapPin,
-  Users,
-  Shield,
-  Save,
-  ArrowLeft,
-  AlertTriangle
-} from 'lucide-react';
+import { User as UserIcon, Mail, Phone, Calendar, MapPin, Users, Shield, Save, ArrowLeft, AlertTriangle, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';

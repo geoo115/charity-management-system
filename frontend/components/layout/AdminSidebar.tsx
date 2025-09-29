@@ -4,40 +4,7 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { useMessagingContext } from '@/contexts/MessagingContext';
 import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  Users, 
-  Heart, 
-  Calendar, 
-  Settings, 
-  HelpCircle,
-  Gift,
-  UserCheck,
-  FileText,
-  BarChart3,
-  MessageSquare,
-  LogOut,
-  ChevronDown,
-  ChevronRight,
-  Bell,
-  Shield,
-  Award,
-  Activity,
-  PlusCircle,
-  TrendingUp,
-  Search,
-  Database,
-  FlaskConical,
-  UserPlus,
-  Building,
-  BadgeCheck,
-  LineChart,
-  Eye,
-  AlertTriangle,
-  Phone,
-  Mail,
-  Siren
-} from 'lucide-react';
+import { Home, Users, Heart, Calendar, Settings, HelpCircle, Gift, UserCheck, FileText, BarChart3, MessageSquare, LogOut, ChevronDown, ChevronRight, Bell, Shield, Award, Activity, PlusCircle, TrendingUp, Search, Database, FlaskConical, UserPlus, Building, BadgeCheck, LineChart, Eye, AlertTriangle, Phone, Mail, Siren, Monitor, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';

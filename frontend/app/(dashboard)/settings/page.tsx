@@ -28,14 +28,7 @@ import {
   FormMessage,
   FormDescription,
 } from '@/components/ui/form';
-import { 
-  User,
-  Bell,
-  Shield,
-  Key,
-  Trash2,
-  Save
-} from 'lucide-react';
+import { User, Bell, Shield, Key, Trash2, Save, Settings } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';

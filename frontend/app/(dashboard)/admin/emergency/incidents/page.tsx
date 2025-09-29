@@ -11,26 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Zap, 
-  Plus, 
-  Clock, 
-  MapPin, 
-  User, 
-  Phone, 
-  MessageSquare,
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Eye,
-  Edit,
-  Play,
-  Activity,
-  Users,
-  Calendar,
-  Timer,
-  AlertCircle
-} from 'lucide-react';
+import { Zap, Plus, Clock, MapPin, User, Phone, MessageSquare, AlertTriangle, CheckCircle, XCircle, Eye, Edit, Play, Activity, Users, Calendar, Timer, AlertCircle, Monitor, Filter } from 'lucide-react';
 
 // Mock incidents data
 const incidentsData = [

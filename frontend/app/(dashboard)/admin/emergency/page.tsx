@@ -6,27 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Siren, 
-  AlertTriangle, 
-  Shield, 
-  Users, 
-  Clock, 
-  Phone, 
-  MessageSquare,
-  Zap,
-  Eye,
-  Play,
-  Pause,
-  CheckCircle,
-  XCircle,
-  Settings,
-  Bell,
-  FileText,
-  Activity,
-  MapPin,
-  User
-} from 'lucide-react';
+import { Siren, AlertTriangle, Shield, Users, Clock, Phone, MessageSquare, Zap, Eye, Play, Pause, CheckCircle, XCircle, Settings, Bell, FileText, Activity, MapPin, User, Edit, Monitor } from 'lucide-react';
 
 // Mock data - would come from API
 const emergencyData = {

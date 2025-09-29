@@ -12,29 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { 
-  Settings, 
-  Globe, 
-  Mail, 
-  Shield, 
-  Database, 
-  Bell, 
-  Users, 
-  FileText,
-  AlertTriangle,
-  Check,
-  X,
-  Save,
-  RefreshCw,
-  Download,
-  Upload,
-  Lock,
-  Server,
-  Activity,
-  Zap,
-  Eye,
-  EyeOff
-} from 'lucide-react'
+import { Settings, Globe, Mail, Shield, Database, Bell, Users, FileText, AlertTriangle, Check, X, Save, RefreshCw, Download, Upload, Lock, Server, Activity, Zap, Eye, EyeOff, Send } from 'lucide-react';
 import { 
   getSystemSettings, 
   updateSystemSettings

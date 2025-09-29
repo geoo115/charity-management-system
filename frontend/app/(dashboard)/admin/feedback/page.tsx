@@ -21,42 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { 
-  MessageSquare, 
-  Star, 
-  TrendingUp, 
-  Calendar as CalendarIcon, 
-  Filter, 
-  Search, 
-  Eye, 
-  Reply, 
-  Check, 
-  X,
-  RefreshCw,
-  Settings,
-  MoreHorizontal,
-  Heart,
-  Frown,
-  Meh,
-  Smile,
-  AlertTriangle,
-  Clock,
-  User,
-  Mail,
-  Tag,
-  BarChart3,
-  PieChart,
-  Activity,
-  CheckSquare,
-  Archive,
-  Flag,
-  ThumbsUp,
-  ThumbsDown,
-  MessageCircle,
-  BrainCircuit,
-  Sparkles,
-  TrendingDown
-} from 'lucide-react'
+import { MessageSquare, Star, TrendingUp, Calendar as CalendarIcon, Filter, Search, Eye, Reply, Check, X, RefreshCw, Settings, MoreHorizontal, Heart, Frown, Meh, Smile, AlertTriangle, Clock, User, Mail, Tag, BarChart3, PieChart, Activity, CheckSquare, Archive, Flag, ThumbsUp, ThumbsDown, MessageCircle, BrainCircuit, Sparkles, TrendingDown, Send } from 'lucide-react';
 import { format } from 'date-fns'
 import { useToast } from '@/components/ui/use-toast'
 import LoadingSpinner from '@/components/common/loading-spinner'

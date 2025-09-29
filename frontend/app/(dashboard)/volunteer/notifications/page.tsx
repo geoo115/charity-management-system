@@ -11,17 +11,7 @@ import { Separator } from '@/components/ui/separator';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-  Bell, 
-  CheckCircle, 
-  AlertTriangle, 
-  AlertCircle, 
-  Info,
-  Mail,
-  MessageSquare,
-  Smartphone,
-  Trash2
-} from 'lucide-react';
+import { Bell, CheckCircle, AlertTriangle, AlertCircle, Info, Mail, MessageSquare, Smartphone, Trash2, Settings } from 'lucide-react';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { formatDate } from '@/lib/utils/date-utils';
 // Import API types

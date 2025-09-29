@@ -12,27 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Checkbox } from '@/components/ui/checkbox';
-import { 
-  AlertCircle, 
-  Send, 
-  Bell, 
-  MessageSquare, 
-  Phone, 
-  Mail, 
-  Users, 
-  Megaphone,
-  Clock,
-  CheckCircle,
-  AlertTriangle,
-  Info,
-  Zap,
-  Smartphone,
-  Radio,
-  Volume2,
-  Eye,
-  Settings,
-  Plus
-} from 'lucide-react';
+import { AlertCircle, Send, Bell, MessageSquare, Phone, Mail, Users, Megaphone, Clock, CheckCircle, AlertTriangle, Info, Zap, Smartphone, Radio, Volume2, Eye, Settings, Plus, Edit, Monitor } from 'lucide-react';
 
 // Mock data for emergency communications
 const communicationData = {

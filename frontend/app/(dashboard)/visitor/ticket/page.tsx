@@ -10,40 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
-import { 
-  Ticket, 
-  QrCode, 
-  Download, 
-  Share2, 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  CheckCircle, 
-  AlertCircle, 
-  XCircle, 
-  RefreshCw,
-  Printer,
-  Mail,
-  Phone,
-  Info,
-  Star,
-  Users,
-  Activity,
-  Bell,
-  Settings,
-  Eye,
-  Copy,
-  ExternalLink,
-  Smartphone,
-  FileText,
-  History,
-  AlertTriangle,
-  Zap,
-  Target,
-  Heart,
-  BookOpen,
-  Shield
-} from 'lucide-react';
+import { Ticket, QrCode, Download, Share2, Calendar, Clock, MapPin, CheckCircle, AlertCircle, XCircle, RefreshCw, Printer, Mail, Phone, Info, Star, Users, Activity, Bell, Settings, Eye, Copy, ExternalLink, Smartphone, FileText, History, AlertTriangle, Zap, Target, Heart, BookOpen, Shield, Search } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 
 interface TicketInfo {

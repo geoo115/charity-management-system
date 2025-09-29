@@ -1,160 +1,144 @@
 # 🏥 Charity Management System
 
-A comprehensive full-stack application for managing charity operations, built with **Go (Gin)** backend and **Next.js** frontend.
+A full-stack platform for managing charity operations, built with **Go (Gin)** and **Next.js**.
+Designed to help charities move beyond spreadsheets and ad-hoc tools, with features for visitors, donors, volunteers, and staff.
 
-## 💡 The Story Behind This System
+---
 
-While volunteering with Lewisham Donation Hub, I witnessed firsthand the operational challenges charities face. Staff were managing donations through spreadsheets, volunteer coordination was handled via WhatsApp groups, and donors had no visibility into their impact.
+## 💡 Why This System Exists
 
-But the most impactful problem I observed was the visitor experience itself. People seeking help had to wait in long queues without knowing if they were eligible for services, often spending hours only to be turned away. There was no fair, transparent system for managing demand or ensuring equitable access to support.
+While volunteering with [Lewisham Donation Hub](https://lewishamdonationhub.org/), I saw how fragmented processes hurt both staff and visitors:
 
-I saw an opportunity to use technology to solve real human problems. The technical challenge wasn't just building a scalable system - it was understanding the nuanced workflows of charity operations and translating them into intuitive software that restores dignity to people in vulnerable situations.
+* Donations tracked in spreadsheets with no donor visibility
+* Volunteers coordinated through WhatsApp groups with no scheduling system
+* Visitors waiting in long queues, often hours, only to learn they were ineligible
 
-**Real-world challenges that shaped the architecture:**
-- **Donation tracking** had to handle both monetary and in-kind donations, with different workflows for each
-- **Volunteer scheduling** needed to account for background check requirements and safeguarding policies
-- **Visitor management system** needed to pre-qualify eligibility and provide time-slot booking, eliminating degrading queues while ensuring fair, transparent access to services
-- **Real-time notifications** weren't just a cool technical feature - they were essential for coordinating emergency response to vulnerable individuals and keeping people informed about their appointment status without requiring them to wait physically
-- **Comprehensive observability** was architected because downtime isn't just inconvenient for a charity - it could mean someone doesn't get the help they need when they're most vulnerable
+This system was built to **restore dignity and efficiency**:
 
-This system transforms manual, error-prone processes into streamlined digital workflows that let charity staff focus on what matters most: helping people in their community with dignity and respect.
+* 📦 Donations tracked transparently (monetary + in-kind)
+* 🙋 Volunteers scheduled fairly with safeguarding checks
+* 👥 Visitors pre-qualified and booked into time slots (no degrading queues)
+* 📊 Staff supported by real-time dashboards and notifications
+
+The mission: reduce waiting times from hours to minutes, and let staff focus on what matters — **helping people in need**.
+
+---
 
 ## 🌟 Features
 
-### 👥 **User Management**
-- **Visitors**: Check-in, help requests, eligibility checking
-- **Donors**: Donation tracking, impact reports, recognition system
-- **Volunteers**: Shift management, application tracking, performance metrics
-- **Staff**: Administrative controls, user management, system oversight
+### 👥 User Roles
 
-### 📊 **Core Functionality**
-- **Donation Management**: Monetary and in-kind donation tracking
-- **Volunteer Coordination**: Shift scheduling, flexible time management
-- **Help Request System**: Ticket management, priority handling
-- **Analytics Dashboard**: Real-time metrics and reporting
-- **Document Management**: Secure file handling and storage
-- **Communication System**: Notifications, templates, and messaging
+* **Visitors** – Check-in, help requests, eligibility assessment
+* **Donors** – Donation tracking, impact reports, recognition
+* **Volunteers** – Shift scheduling, application tracking, performance metrics
+* **Staff** – Administrative controls, system oversight
 
-### 🔧 **Technical Features**
-- **Authentication**: JWT-based with role-based access control
-- **Real-time Updates**: WebSocket integration for live notifications
-- **Caching**: Redis for improved performance
-- **Search**: Advanced filtering and search capabilities
-- **Responsive Design**: Mobile-first UI with accessibility features
-- **API Documentation**: Swagger/OpenAPI integration
+### 📊 Core Functionality
+
+* Donation management (monetary + in-kind)
+* Volunteer coordination and shift scheduling
+* Help request + ticket management
+* Real-time dashboards & analytics
+* Secure document management
+* Notifications and messaging
+
+### 🔧 Technical Features
+
+* **Authentication** – JWT + role-based access control
+* **Real-time** – WebSocket notifications
+* **Performance** – Redis caching
+* **Search** – Advanced filtering
+* **Responsive** – Mobile-first, accessible UI
+* **Documentation** – Swagger/OpenAPI
+
+---
 
 ## 🏗️ Architecture
 
 ```
 ├── backend/          # Go (Gin) API server
-│   ├── cmd/          # Application entry points
-│   ├── internal/     # Private application code
-│   ├── docs/         # API documentation
+│   ├── cmd/          # Entry points
+│   ├── internal/     # Application code
+│   ├── docs/         # API docs
 │   └── migrations/   # Database migrations
-├── frontend/         # Next.js React application
+├── frontend/         # Next.js React app
 │   ├── app/          # App router pages
 │   ├── components/   # Reusable UI components
-│   └── lib/          # Utilities and API clients
+│   └── lib/          # Utilities & API clients
 └── monitoring/       # Observability stack
 ```
+
+---
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Docker** and **Docker Compose**
-- **Go 1.21+** (for local development)
-- **Node.js 18+** (for local development)
-- **PostgreSQL** and **Redis**
 
-### 🐳 Docker Setup (Recommended)
+* **Docker** and **Docker Compose**
+* **Go 1.21+** (local backend dev)
+* **Node.js 18+** (local frontend dev)
+* **PostgreSQL** + **Redis**
+
+### 🐳 Docker Setup (recommended)
 
 ```bash
-# Clone the repository
 git clone https://github.com/geoo115/charity-management-system.git
 cd charity-management-system
 
-# Start all services
 docker-compose up -d
-
-# Your application will be available at:
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8080
-# API Documentation: http://localhost:8080/swagger/index.html
 ```
+
+Services:
+
+* Frontend → [http://localhost:3000](http://localhost:3000)
+* Backend API → [http://localhost:8080](http://localhost:8080)
+* Swagger → [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
 ### 🛠️ Local Development
 
 ```bash
-# Start infrastructure services
+# Infrastructure
 make services-up
 
-# Start backend
-cd backend
-make run
+# Backend
+cd backend && make run
 
-# Start frontend (in another terminal)
+# Frontend (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-## � Documentation
+---
 
-**📖 [Complete Documentation Hub](./docs/README.md)** - Comprehensive guide to all documentation
+## 📖 Documentation
 
-### Quick Reference
-- **[API Documentation](./docs/backend/API_DOCUMENTATION.md)** - Complete API reference and examples
-- **[User Workflows](./docs/workflows/)** - Guides for admins, volunteers, donors, and visitors  
-- **[Architecture Guide](./docs/backend/ARCHITECTURE.md)** - System design and code structure
-- **[Performance Results](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)** - Real measured performance data
-- **[Deployment Guide](./docs/performance/PRODUCTION_RECOMMENDATIONS.md)** - Production deployment best practices
+* [📚 Docs Hub](./docs/README.md) – Complete documentation
+* [🧩 API Reference](./docs/backend/API_DOCUMENTATION.md) – Endpoints + examples
+* [🛠️ Architecture Guide](./docs/backend/ARCHITECTURE.md) – Design & patterns
+* [📊 Performance Results](./docs/performance/FINAL_PERFORMANCE_RESULTS.md) – Load testing data
+* [🚀 Deployment Guide](./docs/performance/PRODUCTION_RECOMMENDATIONS.md) – Production best practices
 
-## �📱 Deployment Ready
-
-This repository is deployment-ready. Live deployment will be performed using your chosen hosting provider and configuration.
-
-Note: Live URLs and environment-specific credentials are intentionally not published here. Update the following placeholders with actual URLs after you deploy the application:
-
-- Frontend URL: <INSERT_FRONTEND_URL>
-- Backend API URL: <INSERT_BACKEND_API_URL>
-- API Documentation (Swagger): <INSERT_SWAGGER_URL>
-
-For local development, create demo or test accounts using the admin setup script or database seed utilities (see `backend/README.md`). Never commit credentials or secrets to source control.
-
-## 🔧 Deployment
-
-### Render (One-Click Deploy)
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
-
-Or manually:
-1. Fork this repository
-2. Connect to [Render](https://render.com)
-3. Create new "Blueprint"
-4. Deploy automatically with `render.yaml`
-
-See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
+---
 
 ## 📊 Monitoring & Observability
 
-The system includes a comprehensive monitoring stack with real performance validation:
+Start full observability stack:
 
 ```bash
-# Start full observability stack
 make observability-setup
 ```
 
-**Monitoring Services:**
-- **[Prometheus](http://localhost:9090)** - Metrics collection and alerting
-- **[Grafana](http://localhost:3001)** - Dashboards and visualization (configure an admin user via environment variables; do not commit passwords)
-- **[Jaeger](http://localhost:16686)** - Distributed tracing and debugging
-- **[AlertManager](http://localhost:9093)** - Alert management and notifications
+Includes:
 
-**Performance Verified:**
-- **0.65ms median response time** - Sub-millisecond performance achieved
-- **16.5 req/sec sustained** - Load tested for 5 minutes continuously  
-- **4,951 requests processed** - Zero failures under sustained load
+* **Prometheus** – Metrics ([http://localhost:9090](http://localhost:9090))
+* **Grafana** – Dashboards ([http://localhost:3001](http://localhost:3001))
+* **Jaeger** – Distributed tracing ([http://localhost:16686](http://localhost:16686))
+* **AlertManager** – Alerts ([http://localhost:9093](http://localhost:9093))
 
-📊 **[View Complete Performance Results](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)**
+Performance validation results are available in [docs/performance](./docs/performance/).
+
+---
 
 ## 🧪 Testing
 
@@ -164,7 +148,7 @@ cd backend
 make test
 make test-coverage
 
-# Frontend tests  
+# Frontend tests
 cd frontend
 npm run test
 npm run test:coverage
@@ -173,48 +157,50 @@ npm run test:coverage
 make load-test
 ```
 
-## 📚 API Documentation
+---
 
-### Interactive Documentation
-- **[Swagger UI](http://localhost:8080/swagger/index.html)** - Interactive API explorer with live testing
-- **[Complete API Guide](./docs/backend/API_DOCUMENTATION.md)** - Detailed endpoints and examples
-- **[Architecture Guide](./docs/backend/ARCHITECTURE.md)** - Code structure and design patterns
+## 🔧 Deployment
 
-### Quick Health Checks
-- **[Health Check](http://localhost:8080/health)** - Application health status
-- **[Metrics Endpoint](http://localhost:8080/metrics)** - Prometheus metrics
-- **[Cache Statistics](http://localhost:8080/api/v1/cache/stats)** - Redis performance metrics
+### Render (One-Click Deploy)
 
-## 🤝 Contributing
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+Manual steps:
 
-## 📄 License
+1. Fork this repo
+2. Connect to [Render](https://render.com)
+3. Create new “Blueprint”
+4. Deploy with `render.yaml`
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🆘 Support & Documentation
-
-- **[📚 Documentation Hub](./docs/README.md)** - Complete documentation organized by topic
-- **[🔧 API Reference](./docs/backend/API_DOCUMENTATION.md)** - Swagger UI: [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
-- **[👥 User Guides](./docs/workflows/)** - Workflow guides for all user types
-- **[🏗️ Architecture](./docs/backend/ARCHITECTURE.md)** - System design and development guide
-- **[📊 Performance Data](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)** - Real performance test results
-- **[🚀 Deployment Guide](./docs/performance/PRODUCTION_RECOMMENDATIONS.md)** - Production deployment best practices
-- **[🐛 Issues](https://github.com/geoo115/charity-management-system/issues)** - Report bugs or request features
-
-## 🏆 Built With
-
-- **Backend**: Go, Gin, GORM, PostgreSQL, Redis
-- **Frontend**: Next.js, React, Tailwind CSS, TypeScript
-- **Monitoring**: Prometheus, Grafana, Jaeger
-- **Deployment**: Docker, Render
-- **Testing**: Vitest, Go testing, k6 load testing
+Detailed instructions → [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 
-**Made with ❤️ for charity organizations and community management** 
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a branch (`git checkout -b feature/new-feature`)
+3. Commit (`git commit -m "Add new feature"`)
+4. Push & open PR
+
+👉 See [CONTRIBUTING.md](./CONTRIBUTING.md) for setup, linting, and test requirements.
+
+---
+
+## 📄 License
+
+MIT License – see [LICENSE](LICENSE).
+
+---
+
+## 🏆 Built With
+
+* **Backend** – Go, Gin, GORM, PostgreSQL, Redis
+* **Frontend** – Next.js, React, Tailwind, TypeScript
+* **Monitoring** – Prometheus, Grafana, Jaeger
+* **Deployment** – Docker, Render
+* **Testing** – Go test, Vitest, k6 load testing
+
+---
+
+**Made with ❤️ for charity organizations and community management.**

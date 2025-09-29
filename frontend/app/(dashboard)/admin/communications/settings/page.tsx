@@ -27,32 +27,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { 
-  Settings,
-  Mail,
-  MessageSquare,
-  Bell,
-  Clock,
-  Users,
-  Shield,
-  Zap,
-  CheckCircle,
-  AlertTriangle,
-  Save,
-  RefreshCw,
-  Plus,
-  Trash2,
-  Edit,
-  Eye,
-  EyeOff,
-  Globe,
-  Smartphone,
-  Monitor,
-  Database,
-  Key,
-  Lock,
-  Server
-} from 'lucide-react';
+import { Settings, Mail, MessageSquare, Bell, Clock, Users, Shield, Zap, CheckCircle, AlertTriangle, Save, RefreshCw, Plus, Trash2, Edit, Eye, EyeOff, Globe, Smartphone, Monitor, Database, Key, Lock, Server, Send } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/use-toast';
 import LoadingSpinner from '@/components/common/loading-spinner';

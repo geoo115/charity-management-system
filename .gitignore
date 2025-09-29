@@ -98,4 +98,4 @@ dump.rdb
 # Application specific
 /data/
 /uploads/
-/storage/
+/storage/.env

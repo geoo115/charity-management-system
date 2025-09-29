@@ -17,37 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/components/ui/use-toast';
-import {
-  Users,
-  Clock,
-  AlertCircle,
-  CheckCircle,
-  Eye,
-  RefreshCw,
-  Phone,
-  MessageSquare,
-  UserCheck,
-  Timer,
-  Activity,
-  TrendingUp,
-  BarChart3,
-  PieChart,
-  Info,
-  HelpCircle,
-  Star,
-  ThumbsUp,
-  Search,
-  Filter,
-  Calendar,
-  MapPin,
-  User,
-  Headphones,
-  Volume2,
-  Bell,
-  AlertTriangle,
-  Heart,
-  Shield
-} from 'lucide-react';
+import { Users, Clock, AlertCircle, CheckCircle, Eye, RefreshCw, Phone, MessageSquare, UserCheck, Timer, Activity, TrendingUp, BarChart3, PieChart, Info, HelpCircle, Star, ThumbsUp, Search, Filter, Calendar, MapPin, User, Headphones, Volume2, Bell, AlertTriangle, Heart, Shield, Monitor } from 'lucide-react';
 import { formatDate, formatTime } from '@/lib/utils/date-utils';
 import LoadingSpinner from '@/components/common/loading-spinner';
 import { 

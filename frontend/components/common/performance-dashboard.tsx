@@ -8,25 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  Activity, 
-  Zap, 
-  Clock, 
-  MemoryStick, 
-  Wifi, 
-  Eye, 
-  TrendingUp, 
-  TrendingDown,
-  AlertTriangle,
-  CheckCircle,
-  RefreshCw,
-  Download,
-  Settings,
-  BarChart3,
-  PieChart,
-  LineChart,
-  Monitor
-} from 'lucide-react';
+import { Activity, Zap, Clock, MemoryStick, Wifi, Eye, TrendingUp, TrendingDown, AlertTriangle, CheckCircle, RefreshCw, Download, Settings, BarChart3, PieChart, LineChart, Monitor, Target } from 'lucide-react';
 import { 
   AreaChart, 
   Area, 

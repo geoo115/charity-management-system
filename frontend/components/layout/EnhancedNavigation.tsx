@@ -4,17 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import {
-    Home,
-    Users2,
-    HandHeart,
-    FolderHeart,
-    ClipboardList,
-    MessageCircle,
-    FileCheck2,
-    CalendarDays,
-    AreaChart
-} from "lucide-react";
+import { Home, Users2, HandHeart, FolderHeart, ClipboardList, MessageCircle, FileCheck2, CalendarDays, AreaChart, Users } from 'lucide-react';
 
 const navigationLinks = [
     {

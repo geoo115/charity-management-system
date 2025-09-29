@@ -3,18 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
 import { cn } from '@/lib/utils';
-import { 
-  Home, 
-  HelpCircle,
-  FileText,
-  User,
-  Ticket,
-  Clock,
-  MessageSquare,
-  LogOut,
-  Plus,
-  CheckCircle
-} from 'lucide-react';
+import { Home, HelpCircle, FileText, User, Ticket, Clock, MessageSquare, LogOut, Plus, CheckCircle, Monitor } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

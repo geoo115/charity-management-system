@@ -12,19 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/components/ui/use-toast';
-import { 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  AlertTriangle,
-  Play,
-  RotateCcw,
-  Users,
-  Activity,
-  Database,
-  Wifi,
-  Settings
-} from 'lucide-react';
+import { CheckCircle, XCircle, Clock, AlertTriangle, Play, RotateCcw, Users, Activity, Database, Wifi, Settings, Search } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 
