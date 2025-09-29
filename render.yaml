@@ -1,5 +1,5 @@
 services:
-  - type: web
+  - type: web               # <-- backend type
     name: charity-backend
     runtime: docker
     plan: free
@@ -15,11 +15,13 @@ services:
           property: connectionString
       - key: REDIS_URL
         fromService:
-          name: charity-redis
           type: redis
+          name: charity-redis
+          property: connectionString
       - key: JWT_SECRET
         generateValue: true
-  - type: redis
+
+  - type: redis             # <-- Redis service type
     name: charity-redis
     plan: free
     region: oregon
