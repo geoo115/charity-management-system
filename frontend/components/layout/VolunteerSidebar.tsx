@@ -173,15 +173,16 @@ export const VolunteerSidebar: React.FC<VolunteerSidebarProps> = ({ user: passed
   const pathname = usePathname();
   const { user: authUser, logout } = useAuth();
   
-  // Safely get messaging context with fallback
-  let totalUnreadCount = 0;
-  try {
-    const messagingContext = useMessagingContext();
-    totalUnreadCount = messagingContext.totalUnreadCount;
-  } catch (error) {
-    // MessagingProvider not available, use default value
-    console.warn('MessagingProvider not available:', error);
-  }
+  // Safely get messaging context with fallback (hook at top-level)
+  const messagingContext = (() => {
+    try {
+      return useMessagingContext();
+    } catch (error) {
+      console.warn('MessagingProvider not available:', error);
+      return undefined;
+    }
+  })();
+  const totalUnreadCount = messagingContext?.totalUnreadCount ?? 0;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
   const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});

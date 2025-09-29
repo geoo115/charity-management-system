@@ -58,8 +58,8 @@ export const useLazyComponent = <T>(
     setError(null);
 
     try {
-      const module = await importFunc();
-      setComponent(module.default);
+      const mod = await importFunc();
+      setComponent(mod.default);
     } catch (err) {
       setError(err as Error);
     } finally {
@@ -326,21 +326,21 @@ export const useCachedAPI = <T>(
 
 // Bundle splitting utilities
 export const loadChunk = async (chunkName: string) => {
-  try {
-    switch (chunkName) {
-      case 'analytics':
-        return await import('../api/analytics');
-      case 'payments':
-        return await import('../api/payment');
-      case 'charts':
-        return await import('recharts');
-      default:
-        throw new Error(`Unknown chunk: ${chunkName}`);
+    try {
+      switch (chunkName) {
+        case 'analytics':
+          return await import('../api/analytics');
+        case 'payments':
+          return await import('../api/payment');
+        case 'charts':
+          return await import('recharts');
+        default:
+          throw new Error(`Unknown chunk: ${chunkName}`);
+      }
+    } catch (error) {
+      console.error(`Failed to load chunk ${chunkName}:`, error);
+      throw error;
     }
-  } catch (error) {
-    console.error(`Failed to load chunk ${chunkName}:`, error);
-    throw error;
-  }
 };
 
 // Performance monitoring

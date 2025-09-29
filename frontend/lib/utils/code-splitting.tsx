@@ -9,7 +9,7 @@ import { LoadingSpinner } from '@/components/common/loading-components';
 import { ErrorBoundary } from '@/components/common/error-boundary';
 
 // Dynamic imports for code splitting
-const LazyAdminDashboard = dynamic(() => import('@/app/(dashboard)/admin/comprehensive/page'), {
+const LazyAdminDashboard = dynamic(() => import('@/app/(dashboard)/admin/page'), {
   loading: () => <LoadingSpinner variant="pulse" />,
   ssr: false
 });
@@ -30,13 +30,13 @@ export const createLazyComponent = <T extends React.ComponentType<any>>(
     const startTime = performance.now();
     
     try {
-      const module = await importFn();
-      const loadTime = performance.now() - startTime;
+  const mod = await importFn();
+  const loadTime = performance.now() - startTime;
       
-      // Log performance metrics
-      console.info(`Component loaded in ${loadTime.toFixed(2)}ms`);
+  // Log performance metrics
+  console.info(`Component loaded in ${loadTime.toFixed(2)}ms`);
       
-      return module;
+  return mod;
     } catch (error) {
       console.error('Failed to load component:', error);
       throw error;
@@ -101,7 +101,7 @@ export class ComponentPreloader {
   
   static preloadRouteComponents(userRole: string) {
     const preloadMap: Record<string, () => Promise<any>> = {
-      admin: () => import('@/app/(dashboard)/admin/comprehensive/page'),
+      admin: () => import('@/app/(dashboard)/admin/page'),
       visitor: () => import('@/app/(dashboard)/visitor/page'),
     };
     

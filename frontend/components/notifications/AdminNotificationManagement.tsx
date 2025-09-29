@@ -617,7 +617,7 @@ export const AdminNotificationManagement: React.FC<AdminNotificationManagementPr
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => useTemplate(template)}
+                          onClick={() => { useTemplate(template); }}
                         >
                           Use Template
                         </Button>
