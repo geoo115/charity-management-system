@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
@@ -44,7 +44,7 @@ const formSchema = z.object({
   roleSpecificData: z.record(z.any()).optional(),
 });
 
-export default function RegisterPage() {
+function RegisterForm() {
   const searchParams = useSearchParams();
   const roleParam = searchParams.get('role');
   
@@ -472,5 +472,13 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }
