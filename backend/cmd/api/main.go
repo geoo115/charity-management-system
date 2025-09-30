@@ -111,8 +111,8 @@ func initializeServices(cfg *config.Config) error {
 		log.Printf("Warning: Failed to initialize admin user: %v", err)
 	}
 
-	// Seed database if enabled
-	if cfg.SeedDatabase {
+	// Seed database if enabled via environment variable
+	if os.Getenv("SEED_DB") == "true" {
 		log.Println("Seeding database with test data...")
 		if err := db.SeedDatabase(dbConn); err != nil {
 			log.Printf("Warning: Failed to seed database: %v", err)
