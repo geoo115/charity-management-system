@@ -592,7 +592,7 @@ export default function QueuePage() {
                 <CardHeader>
                   <CardTitle className="text-sm flex items-center">
                     <BarChart3 className="h-4 w-4 mr-2" />
-                    Today's Statistics
+                    Today&apos;s Statistics
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -869,7 +869,7 @@ export default function QueuePage() {
                     </p>
                   </div>
                   <div>
-                    <p className="font-medium mb-1">Children's Area</p>
+                    <p className="font-medium mb-1">Children&apos;s Area</p>
                     <p className="text-sm text-muted-foreground">
                       Quiet space with toys and books for children
                     </p>
