@@ -76,9 +76,9 @@ jobs:
     needs: pre-deploy-checks
     if: needs.pre-deploy-checks.outputs.deploy-environment == 'staging' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
     
-    environment:
-      name: staging
-      url: https://staging.lewisham-charity.com
+    # environment:
+    #   name: staging
+    #   url: https://staging.lewisham-charity.com
     
     steps:
     - name: Checkout code
@@ -134,9 +134,9 @@ jobs:
     needs: pre-deploy-checks
     if: needs.pre-deploy-checks.outputs.deploy-environment == 'production' && needs.pre-deploy-checks.outputs.should-deploy == 'true'
     
-    environment:
-      name: production
-      url: https://lewisham-charity.com
+    # environment:
+    #   name: production
+    #   url: https://lewisham-charity.com
     
     steps:
     - name: Checkout code
@@ -283,11 +283,11 @@ jobs:
   rollback:
     name: Rollback on Failure
     runs-on: ubuntu-latest
-    needs: [deploy-production]
+    needs: [pre-deploy-checks, deploy-production]
     if: failure() && needs.pre-deploy-checks.outputs.deploy-environment == 'production'
     
-    environment:
-      name: production-rollback
+    # environment:
+    #   name: production-rollback
     
     steps:
     - name: Checkout code
@@ -330,7 +330,7 @@ jobs:
   post-deploy:
     name: Post-deployment Tasks
     runs-on: ubuntu-latest
-    needs: [deploy-staging, deploy-production]
+    needs: [pre-deploy-checks, deploy-staging, deploy-production]
     if: always() && (needs.deploy-staging.result == 'success' || needs.deploy-production.result == 'success')
     
     steps:

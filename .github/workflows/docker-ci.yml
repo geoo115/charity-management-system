@@ -314,6 +314,7 @@ jobs:
               - REDIS_PORT=6379
               - JWT_SECRET=test-jwt-secret-32-characters-long-for-testing
               - PORT=8080
+              - SEED_DB=true
             ports:
               - "8080:8080"
             depends_on:

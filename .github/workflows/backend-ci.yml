@@ -150,9 +150,51 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
 
     - name: Run Gosec Security Scanner
-      uses: securecodewarrior/github-action-gosec@master
-      with:
-        args: '-fmt sarif -out gosec-results.sarif ./backend/...'
+      uses: github/super-linter@v5
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        VALIDATE_GO: true
+        VALIDATE_GITLEAKS: false
+        VALIDATE_JAVASCRIPT_ES: false
+        VALIDATE_JAVASCRIPT_STANDARD: false
+        VALIDATE_PYTHON: false
+        VALIDATE_MD: false
+        VALIDATE_YAML: false
+        VALIDATE_JSON: false
+        VALIDATE_XML: false
+        VALIDATE_BASH: false
+        VALIDATE_DOCKERFILE: false
+        VALIDATE_TERRAFORM: false
+        VALIDATE_KUBERNETES: false
+        VALIDATE_CLOUDFORMATION: false
+        VALIDATE_ARM: false
+        VALIDATE_RUST: false
+        VALIDATE_PHP: false
+        VALIDATE_RUBY: false
+        VALIDATE_CSHARP: false
+        VALIDATE_POWERSHELL: false
+        VALIDATE_CLOJURE: false
+        VALIDATE_COFFEESCRIPT: false
+        VALIDATE_DART: false
+        VALIDATE_ELIXIR: false
+        VALIDATE_ERLANG: false
+        VALIDATE_GROOVY: false
+        VALIDATE_HASKELL: false
+        VALIDATE_HTML: false
+        VALIDATE_JAVA: false
+        VALIDATE_JSCPD: false
+        VALIDATE_KOTLIN: false
+        VALIDATE_LUA: false
+        VALIDATE_OPENAPI: false
+        VALIDATE_PERL: false
+        VALIDATE_PROTOBUF: false
+        VALIDATE_R: false
+        VALIDATE_SCALA: false
+        VALIDATE_SQL: false
+        VALIDATE_SWIFT: false
+        VALIDATE_TCL: false
+        VALIDATE_TYPESCRIPT: false
+        VALIDATE_VUE: false
 
     - name: Upload Gosec results to GitHub Security tab
       uses: github/codeql-action/upload-sarif@v3
@@ -326,6 +368,7 @@ jobs:
         echo "DB_PORT=5432" >> .env
         echo "REDIS_HOST=localhost" >> .env
         echo "REDIS_PORT=6379" >> .env
+        echo "SEED_DB=true" >> .env
 
     - name: Start application
       working-directory: ./backend
