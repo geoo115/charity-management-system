@@ -326,7 +326,7 @@ export default function VolunteerCheckInPage() {
                 Ticket Number Check-in
               </CardTitle>
               <CardDescription>
-                Enter the visitor's ticket number to check them in
+                Enter the visitor&apos;s ticket number to check them in
               </CardDescription>
             </CardHeader>
             <CardContent>

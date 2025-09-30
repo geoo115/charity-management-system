@@ -538,7 +538,7 @@ export default function ShiftDetailsPage() {
                   <Alert>
                     <CheckCircle className="h-4 w-4" />
                     <AlertDescription>
-                      You're signed up for this shift! Check your email for confirmation details.
+                      You&apos;re signed up for this shift! Check your email for confirmation details.
                     </AlertDescription>
                   </Alert>
                   <Button 
@@ -556,7 +556,7 @@ export default function ShiftDetailsPage() {
                 <Alert variant="destructive">
                   <XCircle className="h-4 w-4" />
                   <AlertDescription>
-                    You're not eligible for this shift. Check the requirements or contact support.
+                    You&apos;re not eligible for this shift. Check the requirements or contact support.
                   </AlertDescription>
                 </Alert>
               )}
@@ -609,7 +609,7 @@ export default function ShiftDetailsPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Star className="h-5 w-5" />
-                  What You'll Gain
+                  What You&apos;ll Gain
                 </CardTitle>
               </CardHeader>
               <CardContent>

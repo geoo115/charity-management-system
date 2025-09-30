@@ -225,7 +225,7 @@ export const PendingRequestWarning: React.FC<PendingRequestWarningProps> = ({
               </div>
               <div className="flex items-center text-blue-700">
                 <CheckCircle className="h-4 w-4 mr-2" />
-                You'll receive a ticket via email once your request is approved
+                You&apos;ll receive a ticket via email once your request is approved
               </div>
               {requestedCategory && eligibilityData && (
                 <div className="flex items-center text-blue-700">

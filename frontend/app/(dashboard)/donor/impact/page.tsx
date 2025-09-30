@@ -257,7 +257,7 @@ export default function DonorImpactPage() {
                 {personalImpact.communityScore}/100
               </div>
               <p className="text-muted-foreground">
-                You're in the top {personalImpact.communityScore}% of donors in the community
+                You&apos;re in the top {personalImpact.communityScore}% of donors in the community
               </p>
               <div className="flex justify-center">
                 <Badge className="text-lg px-4 py-2">

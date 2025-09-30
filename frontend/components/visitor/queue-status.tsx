@@ -220,7 +220,7 @@ export const QueueStatusDisplay: React.FC<QueueStatusDisplayProps> = ({
                 <AlertTitle>Estimated Service Time</AlertTitle>
                 <AlertDescription>
                   Based on current queue position and average service time, 
-                  you'll be served in approximately <strong>{formatWaitTime(queueStatus.estimatedWaitTime)}</strong>.
+                  you&apos;ll be served in approximately <strong>{formatWaitTime(queueStatus.estimatedWaitTime)}</strong>.
                 </AlertDescription>
               </Alert>
             </>
@@ -258,7 +258,7 @@ export const QueueStatusDisplay: React.FC<QueueStatusDisplayProps> = ({
             <div>
               <p className="font-medium">Wait for Your Turn</p>
               <p className="text-sm text-muted-foreground">
-                Stay nearby and monitor your queue position. We'll call your number when it's your turn.
+                Stay nearby and monitor your queue position. We&apos;ll call your number when it&apos;s your turn.
               </p>
             </div>
           </div>

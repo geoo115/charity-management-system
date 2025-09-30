@@ -600,8 +600,8 @@ export default function VolunteerApplicationPage() {
                   <div>
                     <h4 className="font-semibold text-blue-900">Ready to Submit</h4>
                     <p className="text-sm text-blue-800 mt-1">
-                      Please review all the information you've provided and submit your application. 
-                      We'll review your application and get back to you within 5-7 business days.
+                      Please review all the information you&apos;ve provided and submit your application. 
+                      We&apos;ll review your application and get back to you within 5-7 business days.
                     </p>
                   </div>
                 </div>

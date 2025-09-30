@@ -419,7 +419,7 @@ export default function ShiftsOverviewPage() {
                     </div>
                     <h3 className="text-xl font-semibold mb-3">No Upcoming Shifts</h3>
                     <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-                      You don't have any shifts scheduled. Browse available opportunities to get started making a difference.
+                      You don&apos;t have any shifts scheduled. Browse available opportunities to get started making a difference.
                     </p>
                     <Button asChild className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white">
                       <Link href="/volunteer/shifts/available">

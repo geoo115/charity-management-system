@@ -220,7 +220,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
                     />
                   </FormControl>
                   <FormDescription>
-                    Your detailed feedback helps us understand what we're doing well and where we can improve.
+                    Your detailed feedback helps us understand what we&apos;re doing well and where we can improve.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

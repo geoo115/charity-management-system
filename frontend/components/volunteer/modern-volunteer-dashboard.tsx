@@ -401,7 +401,7 @@ export default function ModernVolunteerDashboard() {
                 Welcome back, {user?.first_name || 'Volunteer'}! 👋
               </h1>
               <p className="text-muted-foreground mt-1 text-sm lg:text-base">
-                Ready to make a difference today? Here's your volunteer dashboard
+                Ready to make a difference today? Here&apos;s your volunteer dashboard
               </p>
             </div>
           </div>

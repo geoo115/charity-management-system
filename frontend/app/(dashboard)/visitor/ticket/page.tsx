@@ -430,7 +430,7 @@ export default function TicketPage() {
                   <Shield className="h-4 w-4" />
                   <AlertTitle>Security Notice</AlertTitle>
                   <AlertDescription>
-                    Keep your ticket secure and don't share it with others. 
+                    Keep your ticket secure and don&apos;t share it with others. 
                     It contains sensitive information about your appointment.
                   </AlertDescription>
                 </Alert>
@@ -778,7 +778,7 @@ export default function TicketPage() {
               <ul className="mt-2 space-y-1 text-sm">
                 <li>• Arrive 15 minutes before your appointment time</li>
                 <li>• Bring valid ID and proof of address</li>
-                <li>• Keep your ticket secure and don't share it</li>
+                <li>• Keep your ticket secure and don&apos;t share it</li>
                 <li>• Contact us if you need to cancel or reschedule</li>
               </ul>
             </AlertDescription>

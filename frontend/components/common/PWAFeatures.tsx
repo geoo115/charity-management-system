@@ -325,7 +325,7 @@ export const OfflineFallback: React.FC<OfflineFallbackProps> = ({
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>No internet connection</AlertTitle>
             <AlertDescription>
-              You'll be able to retry once your connection is restored.
+              You&apos;ll be able to retry once your connection is restored.
             </AlertDescription>
           </Alert>
         )}

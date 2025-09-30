@@ -377,7 +377,7 @@ const VisitorMessagingPage = () => {
               <span className="font-medium text-blue-900">Need Help?</span>
             </div>
             <p className="text-sm text-blue-700">
-              Our team is here to assist you. Submit a help request and we'll respond as soon as possible.
+              Our team is here to assist you. Submit a help request and we&apos;ll respond as soon as possible.
             </p>
           </div>
         </div>

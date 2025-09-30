@@ -501,7 +501,7 @@ export default function AdminDonationsPage() {
                         )}
                         {donation.notes && (
                           <div className="text-xs text-muted-foreground italic">
-                            "{donation.notes.substring(0, 50)}..."
+                            &ldquo;{donation.notes.substring(0, 50)}&hellip;
                           </div>
                         )}
                       </div>

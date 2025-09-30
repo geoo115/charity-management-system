@@ -695,7 +695,7 @@ export default function SettingsPage() {
                 
                 <div>
                   <Label htmlFor="delete-confirm">
-                    Type "DELETE" to confirm account deletion
+                    Type &quot;DELETE&quot; to confirm account deletion
                   </Label>
                   <Input
                     id="delete-confirm"

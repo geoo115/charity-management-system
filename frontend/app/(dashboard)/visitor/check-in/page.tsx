@@ -784,7 +784,7 @@ export default function CheckInPage() {
                   <Smartphone className="h-4 w-4" />
                   <AlertTitle>SMS Verification</AlertTitle>
                   <AlertDescription>
-                    We'll send a verification code to your registered phone number to confirm your identity.
+                    We&apos;ll send a verification code to your registered phone number to confirm your identity.
                   </AlertDescription>
                 </Alert>
                 
@@ -885,7 +885,7 @@ export default function CheckInPage() {
                 </li>
                 <li className="flex items-start space-x-2">
                   <Wifi className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                  <span>Free WiFi: "LDH-Guest" (no password)</span>
+                  <span>Free WiFi: &quot;LDH-Guest&quot; (no password)</span>
                 </li>
               </ul>
             </div>

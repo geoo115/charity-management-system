@@ -340,7 +340,7 @@ export default function DonorRecognitionPage() {
                 Top 10%
               </div>
               <p className="text-muted-foreground">
-                You're among the most generous donors in the Lewisham community
+                You&apos;re among the most generous donors in the Lewisham community
               </p>
               <div className="flex justify-center space-x-2">
                 <Badge className="text-lg px-4 py-2">

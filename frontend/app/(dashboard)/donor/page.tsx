@@ -348,7 +348,7 @@ export default function DonorDashboard() {
               Community Impact
             </CardTitle>
             <CardDescription>
-              Your donations' real-world impact
+              Your donations&apos; real-world impact
             </CardDescription>
           </CardHeader>
           <CardContent>

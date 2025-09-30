@@ -510,7 +510,7 @@ const VolunteerRoleManagementPage = () => {
                           <DialogHeader>
                             <DialogTitle>Volunteer Role Details</DialogTitle>
                             <DialogDescription>
-                              Detailed information about {volunteer.firstName}'s role and permissions
+                              Detailed information about {volunteer.firstName}&apos;s role and permissions
                             </DialogDescription>
                           </DialogHeader>
                           <div className="space-y-4">

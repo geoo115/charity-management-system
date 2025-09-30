@@ -148,7 +148,7 @@ export default function FlexibleShiftSignupDialog({
             
             {/* Standard shift confirmation would go here */}
             <p className="text-sm text-gray-600">
-              This is a fixed-time shift. You'll be committing to the full duration from {shift.startTime} to {shift.endTime}.
+              This is a fixed-time shift. You&apos;ll be committing to the full duration from {shift.startTime} to {shift.endTime}.
             </p>
             
             <div className="flex justify-end gap-3">

@@ -124,7 +124,7 @@ export default function CreateUserPage() {
     return (
       <Alert variant="destructive">
         <AlertTitle>Access Denied</AlertTitle>
-        <AlertDescription>You don't have permission to access this page.</AlertDescription>
+        <AlertDescription>You don&apos;t have permission to access this page.</AlertDescription>
       </Alert>
     );
   }

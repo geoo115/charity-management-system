@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
-import { useMessagingContext } from '@/contexts/MessagingContext';
+import { useSafeMessagingContext } from '@/contexts/MessagingContext';
 import { cn } from '@/lib/utils';
 import { Home, Users, Heart, Calendar, Settings, HelpCircle, Gift, UserCheck, FileText, BarChart3, MessageSquare, LogOut, ChevronDown, ChevronRight, Bell, Shield, Award, Activity, PlusCircle, TrendingUp, Search, Database, FlaskConical, UserPlus, Building, BadgeCheck, LineChart, Eye, AlertTriangle, Phone, Mail, Siren, Monitor, Send } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -278,14 +278,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ user: passedUser, op
   const { user: authUser, logout } = useAuth();
   
   // Safely get messaging context with fallback (hook at top-level)
-  const messagingContext = (() => {
-    try {
-      return useMessagingContext();
-    } catch (error) {
-      console.warn('MessagingProvider not available:', error);
-      return undefined;
-    }
-  })();
+  const messagingContext = useSafeMessagingContext();
   const totalUnreadCount = messagingContext?.totalUnreadCount ?? 0;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});

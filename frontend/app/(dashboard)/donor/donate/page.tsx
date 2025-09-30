@@ -214,7 +214,7 @@ export default function DonatePage() {
               <CardHeader>
                 <CardTitle>Support Category</CardTitle>
                 <CardDescription>
-                  Choose where you'd like your donation to have the most impact
+                  Choose where you&apos;d like your donation to have the most impact
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -305,7 +305,7 @@ export default function DonatePage() {
                   Gift Aid
                 </CardTitle>
                 <CardDescription>
-                  If you're a UK taxpayer, we can claim an extra 25p for every £1 you donate
+                  If you&apos;re a UK taxpayer, we can claim an extra 25p for every £1 you donate
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

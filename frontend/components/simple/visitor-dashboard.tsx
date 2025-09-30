@@ -251,7 +251,7 @@ const EnhancedVisitorDashboard: React.FC = () => {
             <Alert className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 shadow-lg">
               <Sparkles className="h-4 w-4 text-blue-600" />
               <AlertDescription className="text-blue-900">
-                <strong>Welcome back, {userName.split(' ')[0]}!</strong> We're here to help you today.
+                <strong>Welcome back, {userName.split(' ')[0]}!</strong> We&apos;re here to help you today.
                 <Button
                   variant="ghost"
                   size="sm"

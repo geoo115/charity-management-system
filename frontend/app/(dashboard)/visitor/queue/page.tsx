@@ -836,7 +836,7 @@ export default function QueuePage() {
                     <Wifi className="h-5 w-5 text-blue-600" />
                     <div>
                       <p className="font-medium">Free WiFi</p>
-                      <p className="text-sm text-muted-foreground">Network: "LDH-Guest"</p>
+                      <p className="text-sm text-muted-foreground">Network: &quot;LDH-Guest&quot;</p>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -890,7 +890,7 @@ export default function QueuePage() {
             <AlertTitle>Community Support</AlertTitle>
             <AlertDescription>
               If you need immediate assistance or have concerns about your wait time, 
-              please don't hesitate to speak with our volunteer coordinators. We're here to help 
+              please don&apos;t hesitate to speak with our volunteer coordinators. We&apos;re here to help 
               make your visit as comfortable as possible.
             </AlertDescription>
           </Alert>

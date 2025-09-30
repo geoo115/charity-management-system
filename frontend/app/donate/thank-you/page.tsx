@@ -30,7 +30,7 @@ export default function ThankYouPage() {
                 Your Donation is Being Processed
               </h2>
               <p className="text-green-700">
-                You'll receive an email confirmation shortly with your donation receipt for tax purposes.
+                You&apos;ll receive an email confirmation shortly with your donation receipt for tax purposes.
               </p>
             </div>
 
@@ -46,7 +46,7 @@ export default function ThankYouPage() {
                 <Mail className="w-8 h-8 text-blue-500 mx-auto mb-2" />
                 <h3 className="font-semibold text-gray-900">Stay Connected</h3>
                 <p className="text-sm text-gray-600">
-                  We'll send you regular updates on how your donation is making a difference.
+                  We&apos;ll send you regular updates on how your donation is making a difference.
                 </p>
               </div>
             </div>

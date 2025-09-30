@@ -130,7 +130,7 @@ export default function ApplicationStatusPage() {
             <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">No Application Found</h3>
             <p className="text-muted-foreground mb-4">
-              We couldn't find your volunteer application. Please contact support if you believe this is an error.
+              We couldn&apos;t find your volunteer application. Please contact support if you believe this is an error.
             </p>
             <Button onClick={() => router.push('/volunteer')}>
               Return to Dashboard

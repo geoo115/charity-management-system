@@ -25,6 +25,12 @@ export const useMessagingContext = () => {
   return context;
 };
 
+// Safe version that returns undefined if context is not available
+export const useSafeMessagingContext = () => {
+  const context = useContext(MessagingContext);
+  return context;
+};
+
 interface MessagingProviderProps {
   children: React.ReactNode;
 }

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/lib/auth/auth-context';
-import { useMessagingContext } from '@/contexts/MessagingContext';
+import { useSafeMessagingContext } from '@/contexts/MessagingContext';
 import { cn } from '@/lib/utils';
 import { 
   Home, 
@@ -174,14 +174,7 @@ export const DonorSidebar: React.FC<DonorSidebarProps> = ({ user: passedUser, op
   const { user: authUser, logout } = useAuth();
   
   // Safely get messaging context with fallback (hook at top-level)
-  const messagingContext = (() => {
-    try {
-      return useMessagingContext();
-    } catch (error) {
-      console.warn('MessagingProvider not available:', error);
-      return undefined;
-    }
-  })();
+  const messagingContext = useSafeMessagingContext();
   const totalUnreadCount = messagingContext?.totalUnreadCount ?? 0;
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
