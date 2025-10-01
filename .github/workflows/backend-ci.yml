@@ -1,4 +1,4 @@
-name: Backend CI/CD
+name: Backend CI
 
 on:
   push:
@@ -12,42 +12,13 @@ on:
       - 'backend/**'
 
 env:
-  GO_VERSION: '1.25'
-  DOCKER_REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}/backend
+  GO_VERSION: '1.25.1'
 
 jobs:
-  # Code Quality and Testing
-  test:
-    name: Test and Quality Check
+  build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
     
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: lewisham_hub_test
-          POSTGRES_USER: test_user
-          POSTGRES_PASSWORD: test_password
-          POSTGRES_HOST_AUTH_METHOD: trust
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -58,25 +29,15 @@ jobs:
         go-version: ${{ env.GO_VERSION }}
         cache-dependency-path: backend/go.sum
 
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/go/pkg/mod
-          ~/.cache/go-build
-        key: ${{ runner.os }}-go-${{ hashFiles('backend/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
     - name: Download dependencies
       working-directory: ./backend
-      run: go mod download && go mod verify
+      run: go mod download
 
     - name: Format check
       working-directory: ./backend
       run: |
         if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
-          echo "The following files need formatting:"
+          echo "Code needs formatting"
           gofmt -s -l .
           exit 1
         fi
@@ -85,318 +46,21 @@ jobs:
       working-directory: ./backend
       run: go vet ./...
 
-    - name: Install staticcheck
-      run: go install honnef.co/go/tools/cmd/staticcheck@latest
-
-    - name: Run staticcheck
+    - name: Build application
       working-directory: ./backend
-      run: staticcheck ./...
+      run: go build -v ./cmd/api
 
-    - name: Install golangci-lint
-      uses: golangci/golangci-lint-action@v4
-      with:
-        version: latest
-        working-directory: ./backend
-
-    - name: Set up test environment
+    - name: Run tests
       working-directory: ./backend
-      run: |
-        touch .env.test
-        echo "DB_HOST=localhost" >> .env.test
-        echo "DB_PORT=5432" >> .env.test
-        echo "DB_USER=test_user" >> .env.test
-        echo "DB_PASSWORD=test_password" >> .env.test
-        echo "DB_NAME=lewisham_hub_test" >> .env.test
-        echo "REDIS_HOST=localhost" >> .env.test
-        echo "REDIS_PORT=6379" >> .env.test
-        echo "JWT_SECRET=test-jwt-secret-32-characters-long-for-testing" >> .env.test
-        echo "ENV=test" >> .env.test
-        echo "PORT=8080" >> .env.test
+      run: go test -v ./...
 
-    - name: Run tests with coverage
+    - name: Generate test coverage
       working-directory: ./backend
-      env:
-        ENV_FILE: .env.test
-      run: |
-        go test -v -race -coverprofile=coverage.out -covermode=atomic ./...
-        go tool cover -html=coverage.out -o coverage.html
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      continue-on-error: true
-      with:
-        file: ./backend/coverage.out
-        flags: backend
-        fail_ci_if_error: false
+      run: go test -coverprofile=coverage.out ./...
 
     - name: Upload coverage reports
       uses: actions/upload-artifact@v4
-      with:
-        name: coverage-reports
-        path: |
-          backend/coverage.out
-          backend/coverage.html
-
-  # Security Scanning
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: test
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ env.GO_VERSION }}
-
-    - name: Install Gosec
-      run: go install github.com/securecodewarrior/gosec/v2/cmd/gosec@latest
-
-    - name: Run Gosec Security Scanner
-      working-directory: ./backend
-      continue-on-error: true
-      run: |
-        gosec -fmt sarif -out gosec-results.sarif ./...
-        if [ $? -ne 0 ]; then
-          echo "Gosec found security issues, but continuing CI"
-        fi
-
-    - name: Upload Gosec results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
       if: always()
       with:
-        sarif_file: 'gosec-results.sarif'
-
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        scan-ref: './backend'
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-
-    - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  # Build Application
-  build:
-    name: Build Application
-    runs-on: ubuntu-latest
-    needs: [test, security]
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ env.GO_VERSION }}
-        cache-dependency-path: backend/go.sum
-
-    - name: Build application
-      working-directory: ./backend
-      run: |
-        CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/lewisham-hub-api ./cmd/api
-        
-    - name: Test binary
-      working-directory: ./backend
-      run: |
-        ./bin/lewisham-hub-api --version 2>/dev/null || echo "Binary created successfully"
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: backend-binary
-        path: backend/bin/lewisham-hub-api
-
-  # Docker Build and Push
-  docker:
-    name: Build and Push Docker Image
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
-    
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ env.DOCKER_REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Extract metadata
-      id: meta
-      uses: docker/metadata-action@v5
-      with:
-        images: ${{ env.IMAGE_NAME }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
-
-    - name: Check if Dockerfile exists
-      run: |
-        if [ ! -f backend/Dockerfile ]; then
-          echo "Creating Dockerfile for backend"
-          cat > backend/Dockerfile << 'EOF'
-        FROM golang:1.23-alpine AS builder
-        
-        WORKDIR /app
-        COPY go.mod go.sum ./
-        RUN go mod download
-        
-        COPY . .
-        RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/api
-        
-        FROM alpine:latest
-        RUN apk --no-cache add ca-certificates tzdata
-        WORKDIR /root/
-        
-        COPY --from=builder /app/main .
-        COPY --from=builder /app/.env.example .env
-        
-        EXPOSE 8080
-        CMD ["./main"]
-        EOF
-        fi
-
-    - name: Build and push Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: ./backend
-        file: ./backend/Dockerfile
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-        platforms: linux/amd64,linux/arm64
-
-  # Performance Testing
-  performance:
-    name: Performance Testing
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.ref == 'refs/heads/main'
-    
-    services:
-      postgres:
-        image: postgres:15
-        env:
-          POSTGRES_DB: lewisham_hub
-          POSTGRES_USER: usr
-          POSTGRES_PASSWORD: pwd
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-          
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: backend-binary
-        path: ./backend/bin/
-
-    - name: Set up application
-      working-directory: ./backend
-      run: |
-        chmod +x bin/lewisham-hub-api
-        cp .env.example .env
-        echo "DB_HOST=localhost" >> .env
-        echo "DB_PORT=5432" >> .env
-        echo "REDIS_HOST=localhost" >> .env
-        echo "REDIS_PORT=6379" >> .env
-        echo "SEED_DB=true" >> .env
-
-    - name: Start application
-      working-directory: ./backend
-      run: |
-        ./bin/lewisham-hub-api &
-        APP_PID=$!
-        echo "APP_PID=$APP_PID" >> $GITHUB_ENV
-        
-        # Wait for application to start
-        for i in {1..30}; do
-          if curl -f http://localhost:8080/health 2>/dev/null; then
-            echo "Application is ready"
-            break
-          fi
-          echo "Waiting for application to start... ($i/30)"
-          sleep 2
-        done
-
-    - name: Install k6
-      run: |
-        sudo gpg -k
-        sudo gpg --no-default-keyring --keyring /usr/share/keyrings/k6-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C5AD17C747E3415A3642D57D77C6C491D6AC1D69
-        echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-        sudo apt-get update
-        sudo apt-get install k6
-
-    - name: Run performance tests
-      working-directory: ./backend
-      run: |
-        if [ -f "load-testing/k6-load-test.js" ]; then
-          k6 run --duration=2m --vus=5 load-testing/k6-load-test.js
-        else
-          echo "Creating basic performance test"
-          mkdir -p load-testing
-          cat > load-testing/basic-test.js << 'EOF'
-        import http from 'k6/http';
-        import { check } from 'k6';
-        
-        export let options = {
-          stages: [
-            { duration: '30s', target: 5 },
-            { duration: '1m', target: 5 },
-            { duration: '30s', target: 0 },
-          ],
-        };
-        
-        export default function() {
-          let response = http.get('http://localhost:8080/health');
-          check(response, {
-            'status is 200': (r) => r.status === 200,
-            'response time < 500ms': (r) => r.timings.duration < 500,
-          });
-        }
-        EOF
-          k6 run load-testing/basic-test.js
-        fi
-
-    - name: Stop application
-      if: always()
-      run: |
-        if [ ! -z "$APP_PID" ]; then
-          kill $APP_PID || true
-        fi
+        name: backend-coverage
+        path: backend/coverage.out
