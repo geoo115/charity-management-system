@@ -46,7 +46,7 @@ const AdminMessagingPage = () => {
   useEffect(() => {
     const loadAdminConversations = async () => {
       try {
-        const res = await fetch('/api/v1/admin/volunteers/messages/conversations', {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/volunteers/messages/conversations`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',

@@ -214,7 +214,7 @@ export default function MessagesPage() {
 
   const loadConversations = async () => {
     try {
-      const response = await fetch('/api/v1/volunteer/messages/conversations', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/conversations`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -242,7 +242,7 @@ export default function MessagesPage() {
   const loadAvailableAdmins = async () => {
     console.log('Loading available admins...');
     try {
-      const response = await fetch('/api/v1/volunteer/messages/admins/available', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/admins/available`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -272,7 +272,7 @@ export default function MessagesPage() {
   const loadMessages = async (conversationId: number) => {
     setMessagesLoading(true);
     try {
-      const response = await fetch(`/api/v1/volunteer/messages/conversations/${conversationId}?limit=50`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/conversations/${conversationId}?limit=50`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -304,7 +304,7 @@ export default function MessagesPage() {
   const startNewConversation = async (adminId: number, initialMessage: string) => {
     try {
       // Backend expects { admin_id, initial_message }
-      const response = await fetch('/api/v1/volunteer/messages/start-conversation', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/start-conversation`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -450,7 +450,7 @@ export default function MessagesPage() {
         formData.append('message_type', attachment.type.startsWith('image/') ? 'image' : 'file');
         formData.append('attachment', attachment);
 
-        response = await fetch('/api/v1/volunteer/messages/send', {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/send`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -465,7 +465,7 @@ export default function MessagesPage() {
           message_type: 'text',
         };
 
-        response = await fetch('/api/v1/volunteer/messages/send', {
+        response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/volunteer/messages/send`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
