@@ -46,7 +46,8 @@ jobs:
     - name: Set up Go for backend scan
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23'
+        go-version: '1.25'
+        cache-dependency-path: backend/go.sum
 
     - name: Run Go vulnerability check
       working-directory: ./backend
@@ -69,7 +70,8 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.23'
+        go-version: '1.25'
+        cache-dependency-path: backend/go.sum
 
     - name: Run Go vet
       working-directory: ./backend
