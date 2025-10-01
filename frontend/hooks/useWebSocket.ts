@@ -117,6 +117,13 @@ export const useWebSocket = (options: UseWebSocketOptions = {}): WebSocketHookRe
   }, []);
 
   const connect = useCallback(() => {
+    // Check if WebSocket is disabled via environment variable
+    if (process.env.NEXT_PUBLIC_DISABLE_WEBSOCKET === 'true') {
+      console.log('WebSocket connections disabled via environment variable');
+      setConnectionStatus('disconnected');
+      return;
+    }
+
     // Don't connect if user is not authenticated or component is unmounting
     if (!user?.id || !mountedRef.current) return;
     

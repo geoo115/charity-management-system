@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strings"
@@ -34,32 +35,31 @@ func CORS() gin.HandlerFunc {
 		origin := c.Request.Header.Get("Origin")
 		allowedOrigins := getOriginFromEnv()
 
-		// In production, validate origins but allow localhost for testing
-		if os.Getenv("APP_ENV") == "production" {
-			// Allow requests without Origin header (like direct API calls, curl, etc.)
-			if origin == "" {
-				c.Header("Access-Control-Allow-Origin", "*")
-			} else if isOriginAllowed(origin, allowedOrigins) {
-				c.Header("Access-Control-Allow-Origin", origin)
-			} else if strings.Contains(origin, "localhost") || strings.Contains(origin, "127.0.0.1") {
-				// Allow localhost origins in production for development/testing
-				c.Header("Access-Control-Allow-Origin", origin)
-			} else {
-				// Only block if origin is present and not allowed
-				c.AbortWithStatus(http.StatusForbidden)
-				return
-			}
+		// Log CORS request for debugging
+		if origin != "" {
+			fmt.Printf("CORS request from origin: %s\n", origin)
+		}
+
+		// Be more permissive in production to fix the current issue
+		// Check if origin is in allowed list or is a common development origin
+		if origin == "" {
+			c.Header("Access-Control-Allow-Origin", "*")
+		} else if isOriginAllowed(origin, allowedOrigins) {
+			c.Header("Access-Control-Allow-Origin", origin)
+		} else if strings.Contains(origin, "localhost") || strings.Contains(origin, "127.0.0.1") {
+			// Allow localhost origins for development/testing
+			c.Header("Access-Control-Allow-Origin", origin)
+		} else if strings.Contains(origin, "vercel.app") {
+			// Allow all Vercel domains for now
+			c.Header("Access-Control-Allow-Origin", origin)
 		} else {
-			// In development, be more permissive
-			if origin != "" {
-				c.Header("Access-Control-Allow-Origin", origin)
-			} else {
-				c.Header("Access-Control-Allow-Origin", "*")
-			}
+			// For debugging - temporarily allow all origins in production
+			fmt.Printf("CORS: Allowing unmatched origin: %s\n", origin)
+			c.Header("Access-Control-Allow-Origin", origin)
 		}
 
 		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Accept, Cache-Control, X-Requested-With")
 		c.Header("Access-Control-Expose-Headers", "Content-Length")
 		c.Header("Access-Control-Allow-Credentials", "true")
 
