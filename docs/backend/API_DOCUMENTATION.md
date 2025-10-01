@@ -1,8 +1,8 @@
-# Lewisham Charity - API Documentation
+# Charity Management System - API Documentation
 
 ## Overview
 
-The Lewisham Charity API provides comprehensive endpoints for managing community donations, volunteer coordination, help requests, visitor services, and feedback management. This RESTful API follows OpenAPI 3.0 specifications and includes real-time WebSocket capabilities.
+This proof-of-concept API provides comprehensive endpoints for managing community donations, volunteer coordination, help requests, visitor services, and feedback management. This RESTful API follows OpenAPI 3.0 specifications and includes real-time WebSocket capabilities, demonstrating modern API design practices.
 
 ## 🔗 **Accessing the Documentation**
 

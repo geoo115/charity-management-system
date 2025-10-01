@@ -1,7 +1,7 @@
 # 🌐 **Integrated Workflow System Guide**
-## Lewisham Charity - Unified Community Support Ecosystem
+## Proof-of-Concept: Unified Community Support Ecosystem
 
-This document outlines how all enhanced workflow systems integrate together to create a unified community support ecosystem.
+This document outlines how all enhanced workflow systems integrate together to create a unified community support ecosystem. This is a demonstration system showcasing modern approaches to charity operations management.
 
 ## 📋 **Table of Contents**
 1. [System Overview & Architecture](#system-overview--architecture)

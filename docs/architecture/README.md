@@ -1,6 +1,6 @@
 # System Architecture Overview
 
-This directory contains comprehensive architecture documentation for the Charity Management System, including component diagrams, data flow visualizations, and deployment architecture.
+This directory contains comprehensive architecture documentation for the Charity Management System proof-of-concept, including component diagrams, data flow visualizations, and deployment architecture that demonstrate modern system design principles.
 
 ## Architecture Diagrams
 

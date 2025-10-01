@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Lewisham Charity backend is built using Go with the Gin web framework, following clean architecture principles and domain-driven design patterns.
+This proof-of-concept backend system is built using Go with the Gin web framework, following clean architecture principles and domain-driven design patterns. The system demonstrates modern backend development practices for charity operations management.
 
 ## Project Structure
 

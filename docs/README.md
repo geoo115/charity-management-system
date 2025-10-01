@@ -2,7 +2,7 @@
 
 ## 🎯 Quick Navigation
 
-Welcome to the comprehensive documentation for the Charity Management System. This documentation is organized by topic and audience to help you find exactly what you need.
+Welcome to the comprehensive documentation for the Charity Management System. This is a self-initiated proof-of-concept project demonstrating modern solutions for charity operations management. This documentation is organized by topic and audience to help you find exactly what you need.
 
 ## 🚀 **Getting Started**
 

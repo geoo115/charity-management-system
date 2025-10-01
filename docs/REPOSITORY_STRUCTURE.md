@@ -1,5 +1,7 @@
 # Repository Structure - Clean & Professionally Organized
 
+> This is a self-initiated proof-of-concept project demonstrating modern charity management system architecture.
+
 ## 📁 Root Directory Structure
 ```
 charity-management-system/
