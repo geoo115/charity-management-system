@@ -20,11 +20,16 @@ var documentWebSocketUpgrader = gorilla.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// In development, allow all origins
-		// In production, you should validate against allowed origins
+		// Allow all origins in production for now (can be restricted later)
+		// This ensures WebSocket connections work from Vercel frontend
 		return true
 	},
 	EnableCompression: true,
+	// Add error handling for WebSocket upgrade failures
+	Error: func(w http.ResponseWriter, r *http.Request, status int, reason error) {
+		log.Printf("WebSocket upgrade error: status=%d, reason=%v, origin=%s", status, reason, r.Header.Get("Origin"))
+		http.Error(w, reason.Error(), status)
+	},
 }
 
 // QueueUpdate represents a queue status update
@@ -132,25 +137,33 @@ func HandleQueueUpdates(c *gin.Context) {
 
 // HandleNotificationUpdates handles WebSocket connections for notifications using the centralized manager
 func HandleNotificationUpdates(c *gin.Context) {
+	log.Printf("WebSocket notification request from: %s, User-Agent: %s", c.ClientIP(), c.GetHeader("User-Agent"))
+
 	// Get user info from context (set by middleware)
 	userID, exists := c.Get("userID")
 	if !exists {
+		log.Printf("WebSocket auth failed: no userID in context")
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 		return
 	}
 
 	userRole, exists := c.Get("userRole")
 	if !exists {
+		log.Printf("WebSocket auth failed: no userRole in context for user %v", userID)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User role required"})
 		return
 	}
 
+	log.Printf("WebSocket auth successful for user %v with role %v", userID, userRole)
+
 	// Upgrade connection to WebSocket
 	conn, err := documentWebSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Printf("Notification WebSocket upgrade failed: %v", err)
+		log.Printf("Notification WebSocket upgrade failed for user %v: %v", userID, err)
 		return
 	}
+
+	log.Printf("WebSocket upgrade successful for user %v", userID)
 
 	// Add connection to centralized manager
 	categories := []string{"notifications", "general"}
@@ -502,6 +515,64 @@ func HandlePublicWebSocket(c *gin.Context) {
 	// Wait for connection to close (handled by manager)
 	<-managedConn.Context.Done()
 	log.Printf("Public WebSocket connection closed for client: %s", clientID)
+}
+
+// HandleTestWebSocket provides a simple test WebSocket endpoint without authentication
+func HandleTestWebSocket(c *gin.Context) {
+	log.Printf("Test WebSocket request from: %s", c.ClientIP())
+
+	// Upgrade connection to WebSocket
+	conn, err := documentWebSocketUpgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Printf("Test WebSocket upgrade failed: %v", err)
+		return
+	}
+	defer conn.Close()
+
+	log.Printf("Test WebSocket connection established")
+
+	// Send welcome message
+	welcome := map[string]interface{}{
+		"type":      "test_connection",
+		"message":   "Test WebSocket connection successful",
+		"timestamp": time.Now(),
+		"status":    "connected",
+	}
+
+	if err := conn.WriteJSON(welcome); err != nil {
+		log.Printf("Failed to send welcome message: %v", err)
+		return
+	}
+
+	// Keep connection alive and handle ping/pong
+	for {
+		messageType, message, err := conn.ReadMessage()
+		if err != nil {
+			log.Printf("Test WebSocket read error: %v", err)
+			break
+		}
+
+		log.Printf("Test WebSocket received: %s", string(message))
+
+		// Echo the message back
+		response := map[string]interface{}{
+			"type":      "echo",
+			"original":  string(message),
+			"timestamp": time.Now(),
+		}
+
+		if err := conn.WriteJSON(response); err != nil {
+			log.Printf("Test WebSocket write error: %v", err)
+			break
+		}
+
+		// Handle close messages
+		if messageType == gorilla.CloseMessage {
+			break
+		}
+	}
+
+	log.Printf("Test WebSocket connection closed")
 }
 
 // generateAnonymousClientID creates a unique ID for anonymous WebSocket clients

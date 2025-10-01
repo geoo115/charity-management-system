@@ -12,6 +12,10 @@ func SetupRealTimeRoutes(r *gin.Engine) {
 	// WebSocket status endpoints (no authentication required)
 	r.GET("/api/v1/ws-status", systemHandlers.HandleWebSocketStatus)
 	r.GET("/api/v1/ws-heartbeat", systemHandlers.HandleWebSocketHeartbeat)
+
+	// Test WebSocket endpoint (no auth) for debugging
+	r.GET("/ws/test", systemHandlers.HandleTestWebSocket)
+
 	// WebSocket endpoints (with token-based authentication for WebSocket compatibility)
 	wsGroup := r.Group("/ws")
 	wsGroup.Use(middleware.WebSocketAuth(), middleware.WebSocketRateLimit())
