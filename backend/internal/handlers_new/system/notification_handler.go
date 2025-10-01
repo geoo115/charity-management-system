@@ -19,8 +19,8 @@ type TestNotificationRequest struct {
 	Name             string `json:"name"`
 }
 
-// TestNotification handles requests to test notification delivery
-func TestNotification(c *gin.Context) {
+// NotificationTestHandler handles requests to test notification delivery
+func NotificationTestHandler(c *gin.Context) {
 	var req TestNotificationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
