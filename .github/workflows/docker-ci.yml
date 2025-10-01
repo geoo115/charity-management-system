@@ -99,7 +99,7 @@ jobs:
         
         # Health check
         HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-          CMD ["/main", "health"] || exit 1
+          CMD ["./main", "--health"] || exit 1
         
         # Run the binary
         ENTRYPOINT ["/main"]
@@ -220,7 +220,7 @@ jobs:
         
         # Health check
         HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-          CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+          CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))" || exit 1
         
         CMD ["node", "server.js"]
         EOF
@@ -323,7 +323,7 @@ jobs:
               redis:
                 condition: service_healthy
             healthcheck:
-              test: ["CMD", "/main", "health"]
+              test: ["CMD", "./main", "--health"]
               interval: 10s
               timeout: 5s
               retries: 5
@@ -338,7 +338,7 @@ jobs:
               backend:
                 condition: service_healthy
             healthcheck:
-              test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+              test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"]
               interval: 10s
               timeout: 5s
               retries: 5
