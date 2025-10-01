@@ -1,0 +1,39 @@
+# Prometheus configuration file
+global:
+  scrape_interval: 15s      # How often to scrape targets
+  evaluation_interval: 15s   # How often to evaluate rules
+  external_labels:
+    monitor: 'charity-management-system'
+
+# Scrape configurations
+scrape_configs:
+  # Scrape metrics from the Go backend
+  - job_name: 'charity-backend'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['host.docker.internal:8080']  # Backend running on host
+        labels:
+          service: 'charity-api'
+          env: 'development'
+    metrics_path: '/metrics'
+
+  # Prometheus monitoring itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # Redis metrics (if you add redis_exporter)
+  # - job_name: 'redis'
+  #   static_configs:
+  #     - targets: ['redis-exporter:9121']
+  #       labels:
+  #         service: 'redis'
+
+  # PostgreSQL metrics (if you add postgres_exporter)
+  # - job_name: 'postgresql'
+  #   static_configs:
+  #     - targets: ['postgres-exporter:9187']
+  #       labels:
+  #         service: 'postgresql'
