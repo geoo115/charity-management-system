@@ -13,7 +13,7 @@ While volunteering with [Lewisham Donation Hub](https://lewishamdonationhub.org/
 * Volunteers coordinated through WhatsApp groups with no scheduling system
 * Visitors waiting in long queues, often hours, only to learn they were ineligible
 
-This system was built to **restore dignity and efficiency**:
+This project is a self-initiated proof-of-concept, built to demonstrate a modern solution to these challenges. This system was built to **restore dignity and efficiency**:
 
 * 📦 Donations tracked transparently (monetary + in-kind)
 * 🙋 Volunteers scheduled fairly with safeguarding checks
