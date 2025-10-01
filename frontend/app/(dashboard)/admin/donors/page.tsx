@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -26,11 +26,7 @@ export default function AdminDonorsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchDonors();
-  }, []);
-
-  const fetchDonors = async () => {
+  const fetchDonors = useCallback(async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/admin/donors`, {
         headers: {
@@ -87,7 +83,11 @@ export default function AdminDonorsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchDonors();
+  }, [fetchDonors]);
 
   const filteredDonors = donors.filter(donor =>
     donor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
