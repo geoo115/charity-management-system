@@ -5,6 +5,8 @@ on:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
+    # Skip for Dependabot PRs to reduce noise
+    types: [opened, synchronize, reopened]
   schedule:
     # Run security scans daily at 2 AM UTC
     - cron: '0 2 * * *'
@@ -20,6 +22,8 @@ jobs:
   dependency-scan:
     name: Dependency Vulnerability Scan
     runs-on: ubuntu-latest
+    # Skip for Dependabot PRs to avoid redundant scanning
+    if: github.actor != 'dependabot[bot]'
     
     strategy:
       matrix:

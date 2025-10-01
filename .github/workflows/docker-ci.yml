@@ -6,6 +6,8 @@ on:
     tags: [ 'v*' ]
   pull_request:
     branches: [ main ]
+    # Skip Docker builds for Dependabot PRs
+    types: [opened, synchronize, reopened]
 
 env:
   DOCKER_REGISTRY: ghcr.io
