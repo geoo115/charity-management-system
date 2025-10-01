@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'api.lewishamCharity.org', 'lewisham-charity-hub-api.onrender.com'],
+    domains: ['localhost', 'api.lewishamCharity.org', 'lewisham-charity-hub-api.onrender.com', 'charity-backend-w5cm.onrender.com'],
   },
   async rewrites() {
     // Only use rewrites in development
@@ -46,7 +46,7 @@ const nextConfig = {
     ];
   },
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080',
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://charity-backend-w5cm.onrender.com',
   },
 };
 

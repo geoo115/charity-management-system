@@ -12,8 +12,8 @@ import (
 func getOriginFromEnv() []string {
 	corsOrigins := os.Getenv("CORS_ALLOWED_ORIGINS")
 	if corsOrigins == "" {
-		// Default to common development origins if not set
-		corsOrigins = "http://localhost:3000,http://localhost:5173,http://localhost:8080"
+		// Default to common development and production origins if not set
+		corsOrigins = "http://localhost:3000,http://localhost:5173,http://localhost:8080,https://charity-management-system-puce.vercel.app"
 	}
 	return strings.Split(corsOrigins, ",")
 }
