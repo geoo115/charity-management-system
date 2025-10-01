@@ -20,7 +20,7 @@ RUN go mod download
 RUN go build -ldflags="-s -w" -o /bin/charity-backend ./cmd/api
 
 # ---------- Runner ----------
-FROM alpine:3.18
+FROM alpine:3.22
 
 RUN apk add --no-cache ca-certificates
 
