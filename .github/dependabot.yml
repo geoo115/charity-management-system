@@ -31,6 +31,9 @@ updates:
       prefix: "frontend"
       include: "scope"
     open-pull-requests-limit: 5
+    ignore:
+      - dependency-name: "eslint"
+        versions: [">=9"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
