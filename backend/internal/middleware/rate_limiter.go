@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/geoo115/charity-management-system/internal/config"
 	"github.com/gin-gonic/gin"
 )
 
@@ -104,20 +105,36 @@ func RateLimit(limit int, window time.Duration) gin.HandlerFunc {
 		}
 
 		allowed, currentCount := limiter.isAllowed(key)
-		if !allowed {
-			// Calculate retry after time with exponential backoff
-			retryAfter := int(window.Seconds())
-			if currentCount > limit {
-				retryAfter = int(window.Seconds() * float64(currentCount-limit))
-			}
 
-			c.Header("X-RateLimit-Limit", strconv.Itoa(limit))
-			c.Header("X-RateLimit-Remaining", "0")
-			c.Header("X-RateLimit-Reset", strconv.Itoa(retryAfter))
+		// Set rate limit headers for all requests
+		remaining := limit - currentCount
+		if remaining < 0 {
+			remaining = 0
+		}
+		c.Header("X-RateLimit-Limit", strconv.Itoa(limit))
+		c.Header("X-RateLimit-Remaining", strconv.Itoa(remaining))
+		c.Header("X-RateLimit-Window", window.String())
+
+		if !allowed {
+			// Calculate retry after time - time until window resets
+			retryAfter := int(window.Seconds())
+			resetTime := time.Now().Add(window).Unix()
+
+			c.Header("X-RateLimit-Reset", strconv.FormatInt(resetTime, 10))
 			c.Header("Retry-After", strconv.Itoa(retryAfter))
+
+			// More user-friendly error message
+			endpoint := c.Request.URL.Path
 			c.JSON(http.StatusTooManyRequests, gin.H{
-				"error":       "Rate limit exceeded. Please try again later.",
-				"retry_after": retryAfter,
+				"error":   "Rate limit exceeded",
+				"message": fmt.Sprintf("Too many requests to %s. You can make %d requests per %v.", endpoint, limit, window),
+				"details": gin.H{
+					"limit":         limit,
+					"window":        window.String(),
+					"retry_after":   retryAfter,
+					"reset_time":    resetTime,
+					"current_count": currentCount,
+				},
 			})
 			c.Abort()
 			return
@@ -127,22 +144,65 @@ func RateLimit(limit int, window time.Duration) gin.HandlerFunc {
 	}
 }
 
+// ConfigurableRateLimit creates a rate limiter with configuration support
+func ConfigurableRateLimit(cfg *config.RateLimitConfig, limit int, window time.Duration) gin.HandlerFunc {
+	// In development mode, optionally bypass rate limiting
+	if cfg != nil && !cfg.EnabledInDev {
+		// Check if we're in development mode
+		return func(c *gin.Context) {
+			if gin.Mode() == gin.DebugMode {
+				c.Next()
+				return
+			}
+			// Use regular rate limiting in production
+			RateLimit(limit, window)(c)
+		}
+	}
+
+	return RateLimit(limit, window)
+}
+
 // AuthRateLimit provides stricter rate limiting for authentication endpoints
 func AuthRateLimit() gin.HandlerFunc {
-	return RateLimit(5, time.Minute*15) // 5 attempts per 15 minutes
+	cfg, _ := config.Load()
+	if cfg != nil {
+		return ConfigurableRateLimit(&cfg.RateLimit, cfg.RateLimit.AuthLimit, cfg.RateLimit.AuthWindow)
+	}
+	return ConfigurableRateLimit(nil, 10, time.Minute)
 }
 
 // APIRateLimit provides general API rate limiting
 func APIRateLimit() gin.HandlerFunc {
-	return RateLimit(100, time.Minute) // 100 requests per minute
+	cfg, _ := config.Load()
+	if cfg != nil {
+		return ConfigurableRateLimit(&cfg.RateLimit, cfg.RateLimit.APILimit, cfg.RateLimit.APIWindow)
+	}
+	return ConfigurableRateLimit(nil, 100, time.Minute)
 }
 
 // WebSocketRateLimit provides more lenient rate limiting for WebSocket connections
 func WebSocketRateLimit() gin.HandlerFunc {
-	return RateLimit(100, time.Minute*5) // 100 connections per 5 minutes - more appropriate for development and testing
+	cfg, _ := config.Load()
+	if cfg != nil {
+		return ConfigurableRateLimit(&cfg.RateLimit, cfg.RateLimit.WebSocketLimit, cfg.RateLimit.WebSocketWindow)
+	}
+	return ConfigurableRateLimit(nil, 50, time.Minute)
 }
 
 // StrictRateLimit provides very strict rate limiting for sensitive operations
 func StrictRateLimit() gin.HandlerFunc {
-	return RateLimit(10, time.Hour) // 10 requests per hour
+	cfg, _ := config.Load()
+	if cfg != nil {
+		return ConfigurableRateLimit(&cfg.RateLimit, cfg.RateLimit.StrictLimit, cfg.RateLimit.StrictWindow)
+	}
+	return ConfigurableRateLimit(nil, 3, time.Minute*5)
+}
+
+// LoginRateLimit provides rate limiting specifically for login endpoints
+func LoginRateLimit() gin.HandlerFunc {
+	cfg, _ := config.Load()
+	if cfg != nil {
+		return ConfigurableRateLimit(&cfg.RateLimit, cfg.RateLimit.LoginLimit, cfg.RateLimit.LoginWindow)
+	}
+	return ConfigurableRateLimit(nil, 5, time.Minute)
 }

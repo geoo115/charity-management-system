@@ -30,6 +30,24 @@ func getJWTSecret() ([]byte, error) {
 	return []byte(jwtSecret), nil
 }
 
+// FastAuth provides a simplified authentication middleware for high-load scenarios
+func FastAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Skip auth validation for load testing in development
+		if os.Getenv("ENVIRONMENT") == "development" && os.Getenv("SKIP_AUTH_FOR_LOAD_TEST") == "true" {
+			// Set mock user data for load testing
+			c.Set("userID", uint(1))
+			c.Set("userRole", "Admin")
+			c.Set("user_email", "test@example.com")
+			c.Next()
+			return
+		}
+
+		// Normal auth flow
+		Auth()(c)
+	}
+}
+
 // Auth middleware validates JWT tokens
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {

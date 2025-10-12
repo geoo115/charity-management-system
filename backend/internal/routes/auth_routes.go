@@ -15,8 +15,8 @@ func SetupAuthRoutes(r *gin.Engine) error {
 	authGroup := r.Group("/api/v1/auth")
 	{
 		// Core authentication
-		authGroup.POST("/register", middleware.RateLimit(5, time.Minute), auth.Register)
-		authGroup.POST("/login", middleware.RateLimit(5, time.Minute), auth.Login)
+		authGroup.POST("/register", middleware.AuthRateLimit(), auth.Register)
+		authGroup.POST("/login", middleware.LoginRateLimit(), auth.Login)
 		authGroup.POST("/refresh", auth.RefreshTokenHandler)
 		authGroup.POST("/logout", middleware.Auth(), auth.Logout)
 		authGroup.GET("/validate-token", middleware.Auth(), auth.ValidateToken)
@@ -26,14 +26,14 @@ func SetupAuthRoutes(r *gin.Engine) error {
 		authGroup.POST("/resend-verification", auth.ResendVerificationEmail)
 
 		// Password management
-		authGroup.POST("/forgot-password", middleware.RateLimit(3, time.Minute), auth.ForgotPassword)
-		authGroup.POST("/reset-password", middleware.RateLimit(5, time.Minute), auth.ResetPassword)
+		authGroup.POST("/forgot-password", middleware.StrictRateLimit(), auth.ForgotPassword)
+		authGroup.POST("/reset-password", middleware.AuthRateLimit(), auth.ResetPassword)
 
 		// User profile access
 		authGroup.GET("/me", middleware.Auth(), auth.GetCurrentUser)
 
 		// Privacy & data protection endpoints
-		authGroup.POST("/export", middleware.Auth(), middleware.RateLimit(3, time.Minute), func(c *gin.Context) {
+		authGroup.POST("/export", middleware.Auth(), middleware.StrictRateLimit(), func(c *gin.Context) {
 			// Delegated to privacy handler
 			// using import alias to avoid cycles
 			privacy.RequestDataExport(c)
@@ -42,11 +42,11 @@ func SetupAuthRoutes(r *gin.Engine) error {
 		authGroup.GET("/export/:id/download", middleware.Auth(), privacy.DownloadExport)
 
 		// Account deletion flow
-		authGroup.POST("/delete", middleware.Auth(), middleware.RateLimit(2, time.Minute), privacy.RequestAccountDeletion)
-		authGroup.POST("/delete/:id/confirm", middleware.Auth(), middleware.RateLimit(2, time.Minute), privacy.ConfirmAccountDeletion)
+		authGroup.POST("/delete", middleware.Auth(), middleware.StrictRateLimit(), privacy.RequestAccountDeletion)
+		authGroup.POST("/delete/:id/confirm", middleware.Auth(), middleware.StrictRateLimit(), privacy.ConfirmAccountDeletion)
 
 		// Consent management
-		authGroup.POST("/consent", middleware.Auth(), middleware.RateLimit(5, time.Minute), privacy.UpdateConsent)
+		authGroup.POST("/consent", middleware.Auth(), middleware.AuthRateLimit(), privacy.UpdateConsent)
 	}
 
 	// Legacy compatibility routes

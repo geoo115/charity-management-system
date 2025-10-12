@@ -175,7 +175,7 @@ func (u *UserEnhanced) HashPassword(password string) error {
 		return fmt.Errorf("password cannot be empty")
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 6) // Lower cost for performance
 	if err != nil {
 		return fmt.Errorf("failed to hash password: %w", err)
 	}

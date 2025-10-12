@@ -15,6 +15,7 @@ type Config struct {
 	JWT           JWTConfig
 	Server        ServerConfig
 	Social        SocialConfig
+	RateLimit     RateLimitConfig
 	Environment   string
 	Port          string
 	SeedDatabase  bool
@@ -61,6 +62,20 @@ type ServerConfig struct {
 	Debug        bool
 	ReadTimeout  time.Duration
 	WriteTimeout time.Duration
+}
+
+type RateLimitConfig struct {
+	EnabledInDev    bool
+	LoginLimit      int
+	LoginWindow     time.Duration
+	APILimit        int
+	APIWindow       time.Duration
+	AuthLimit       int
+	AuthWindow      time.Duration
+	StrictLimit     int
+	StrictWindow    time.Duration
+	WebSocketLimit  int
+	WebSocketWindow time.Duration
 }
 
 type SocialConfig struct {
@@ -147,6 +162,19 @@ func Load() (*Config, error) {
 				ConsumerSecret: getEnv("TWITTER_CONSUMER_SECRET", ""),
 				Enabled:        getEnvAsBool("TWITTER_ENABLED", false),
 			},
+		},
+		RateLimit: RateLimitConfig{
+			EnabledInDev:    getEnvAsBool("RATE_LIMIT_ENABLED_IN_DEV", false),
+			LoginLimit:      getEnvAsInt("RATE_LIMIT_LOGIN", 5),
+			LoginWindow:     getEnvAsDuration("RATE_LIMIT_LOGIN_WINDOW", "1m"),
+			APILimit:        getEnvAsInt("RATE_LIMIT_API", 100),
+			APIWindow:       getEnvAsDuration("RATE_LIMIT_API_WINDOW", "1m"),
+			AuthLimit:       getEnvAsInt("RATE_LIMIT_AUTH", 10),
+			AuthWindow:      getEnvAsDuration("RATE_LIMIT_AUTH_WINDOW", "1m"),
+			StrictLimit:     getEnvAsInt("RATE_LIMIT_STRICT", 3),
+			StrictWindow:    getEnvAsDuration("RATE_LIMIT_STRICT_WINDOW", "5m"),
+			WebSocketLimit:  getEnvAsInt("RATE_LIMIT_WEBSOCKET", 50),
+			WebSocketWindow: getEnvAsDuration("RATE_LIMIT_WEBSOCKET_WINDOW", "1m"),
 		},
 	}
 

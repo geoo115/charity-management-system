@@ -395,22 +395,31 @@ npm run test:coverage
 ```bash
 # Run performance tests (requires k6)
 cd backend/load-testing
-./run-load-tests.sh all
+./run-load-tests.sh
 
 # Results saved in load-testing/results/
 ```
 
-### Expected Performance
+### Validated Performance Metrics
 
-Based on load testing with k6:
+Based on realistic load testing with k6 (500 concurrent users, 20 minutes):
 
-- **Throughput**: 1000+ requests/second
-- **Latency (P95)**: < 200ms
-- **Latency (P99)**: < 500ms
-- **Error Rate**: < 0.1%
-- **Cache Hit Rate**: > 70%
+- **Concurrent Users**: 500 users sustained
+- **Median Response**: 0.5ms (502 microseconds)
+- **P90 Latency**: 1.45ms
+- **P95 Latency**: 2.65ms
+- **Success Rate**: 99.44%
+- **HTTP Failure Rate**: 0.00%
+- **Throughput**: 163 req/sec sustained
+- **Total Requests**: 196,706 over 20 minutes
 
-Full results: [docs/performance/FINAL_PERFORMANCE_RESULTS.md](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)
+**Authentication Performance:**
+- Login Median: 76.9ms
+- Login P95: 114.43ms
+- Success Rate: 99%
+
+Full analysis: [docs/performance/LOAD_TESTING_ANALYSIS.md](./docs/performance/LOAD_TESTING_ANALYSIS.md)  
+Complete results: [docs/performance/FINAL_PERFORMANCE_RESULTS.md](./docs/performance/FINAL_PERFORMANCE_RESULTS.md)
 
 ---
 

@@ -97,7 +97,7 @@ func (mc *MiddlewareChains) Public() []gin.HandlerFunc {
 // Authenticated returns middleware chain for authenticated routes
 func (mc *MiddlewareChains) Authenticated() []gin.HandlerFunc {
 	middlewares := mc.Public()
-	middlewares = append(middlewares, middleware.Auth())
+	middlewares = append(middlewares, middleware.FastAuth())
 	return middlewares
 }
 

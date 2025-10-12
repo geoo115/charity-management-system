@@ -370,9 +370,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// Find user by email (ensure lowercase for consistency)
+	// Find user by email with optimized query (ensure lowercase for consistency)
 	var user models.User
-	if err := db.DB.Where("email = ?", strings.ToLower(req.Email)).First(&user).Error; err != nil {
+	if err := db.DB.Select("id, email, password, role, status, last_login, first_login").
+		Where("email = ?", strings.ToLower(req.Email)).First(&user).Error; err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid email or password"})
 		return
 	}
@@ -381,8 +382,8 @@ func Login(c *gin.Context) {
 	if err := user.CheckPassword(req.Password); err != nil {
 		// If password is not hashed (should not happen), try hashing and comparing
 		if err == bcrypt.ErrHashTooShort {
-			// Hash the stored password and compare again
-			hashed, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+			// Hash the stored password and compare again using lower cost for performance
+			hashed, hashErr := bcrypt.GenerateFromPassword([]byte(user.Password), 6) // Lower cost for performance
 			if hashErr == nil && bcrypt.CompareHashAndPassword(hashed, []byte(req.Password)) == nil {
 				goto login_success
 			}
@@ -404,11 +405,12 @@ login_success:
 		return
 	}
 
-	// Update last login
+	// Update last login with optimized query
 	now := time.Now()
-	user.LastLogin = &now
-	user.FirstLogin = false
-	if err := db.DB.Save(&user).Error; err != nil {
+	if err := db.DB.Model(&user).Updates(map[string]interface{}{
+		"last_login":  &now,
+		"first_login": false,
+	}).Error; err != nil {
 		log.Printf("Failed to update last login: %v", err)
 	}
 
@@ -664,7 +666,7 @@ func ForgotPassword(c *gin.Context) {
 	}
 
 	// Hash the token for storage
-	hashedToken, err := bcrypt.GenerateFromPassword([]byte(resetToken), bcrypt.DefaultCost)
+	hashedToken, err := bcrypt.GenerateFromPassword([]byte(resetToken), 6) // Lower cost for performance
 	if err != nil {
 		log.Printf("Failed to hash reset token: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to process request"})

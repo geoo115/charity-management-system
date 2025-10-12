@@ -200,13 +200,13 @@ func (cm *ConnectionManager) connectToDatabase() (*gorm.DB, error) {
 		cm.config.Host, cm.config.Port, cm.config.User, cm.config.Password,
 		cm.config.DBName, cm.config.SSLMode)
 
-	// Configure GORM with proper settings
+	// Configure GORM with optimized performance settings
 	gormConfig := &gorm.Config{
 		Logger: logger.New(
 			cm.logger,
 			logger.Config{
-				SlowThreshold:             200 * time.Millisecond,
-				LogLevel:                  logger.Warn,
+				SlowThreshold:             50 * time.Millisecond, // Reduced from 200ms for better performance monitoring
+				LogLevel:                  logger.Error,          // Only log errors in production for better performance
 				IgnoreRecordNotFoundError: true,
 				Colorful:                  false,
 			},
@@ -215,8 +215,10 @@ func (cm *ConnectionManager) connectToDatabase() (*gorm.DB, error) {
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: false, // Use plural table names
 		},
-		SkipDefaultTransaction: true, // Better performance
+		SkipDefaultTransaction: true, // Better performance - skip auto transactions
 		PrepareStmt:            true, // Prepare statements for better performance
+		QueryFields:            true, // Query with explicit field names for better performance
+		CreateBatchSize:        1000, // Batch size for bulk operations
 	}
 
 	db, err := gorm.Open(postgres.Open(dsn), gormConfig)

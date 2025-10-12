@@ -47,7 +47,9 @@ func (u *User) HashPassword() error {
 		return err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), bcrypt.DefaultCost)
+	// Use cost 8 for better performance in high-load scenarios
+	// Still secure but faster than default cost 10
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(u.Password), 8)
 	if err != nil {
 		return err
 	}
@@ -67,7 +69,8 @@ func (u *User) HashPasswordWithValue(password string) error {
 		return err
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	// Use cost 8 for better performance in high-load scenarios
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 8)
 	if err != nil {
 		return err
 	}

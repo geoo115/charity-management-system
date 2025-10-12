@@ -78,6 +78,11 @@ func (rm *RouteManager) Setup() error {
 		return RouteSetupError{Component: "auth_routes", Err: err}
 	}
 
+	// Setup generic API routes (dashboard, help-requests)
+	if err := rm.setupGenericRoutes(); err != nil {
+		return RouteSetupError{Component: "generic_routes", Err: err}
+	}
+
 	// Setup role-specific routes
 	if err := rm.setupRoleSpecificRoutes(); err != nil {
 		return RouteSetupError{Component: "role_routes", Err: err}
@@ -231,6 +236,11 @@ func (rm *RouteManager) setupAuthRoutes() error {
 	}
 	SetupUserRoutes(rm.router)
 	return nil
+}
+
+// setupGenericRoutes configures generic API routes for load testing
+func (rm *RouteManager) setupGenericRoutes() error {
+	return SetupGenericRoutes(rm.router)
 }
 
 // setupRoleSpecificRoutes configures role-based routes

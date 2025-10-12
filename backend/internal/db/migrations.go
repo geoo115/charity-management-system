@@ -103,13 +103,12 @@ func (mm *MigrationManager) defineMigrations() []Migration {
 			Up:          mm.migrateModels,
 			Down:        mm.dropAllTables,
 		},
-		// Temporarily disabled to avoid transaction issues
-		// {
-		// 	Version:     "003_database_indexes",
-		// 	Description: "Create performance indexes",
-		// 	Up:          mm.createIndexes,
-		// 	Down:        mm.dropIndexes,
-		// },
+		{
+			Version:     "003_database_indexes",
+			Description: "Create performance indexes",
+			Up:          mm.createIndexes,
+			Down:        mm.dropIndexes,
+		},
 		{
 			Version:     "004_volunteer_roles",
 			Description: "Add volunteer role hierarchy fields",
@@ -860,6 +859,74 @@ func (mm *MigrationManager) cleanupDefaultData(db *gorm.DB) error {
 func RunMigrations(db *gorm.DB) error {
 	manager := NewMigrationManager(db)
 	return manager.RunMigrations()
+}
+
+// createIndexes creates performance-critical database indexes
+func (mm *MigrationManager) createIndexes(db *gorm.DB) error {
+	mm.logger.Println("Creating performance indexes...")
+
+	indexes := []struct {
+		table   string
+		columns string
+		name    string
+	}{
+		// User indexes for authentication
+		{"users", "email", "idx_users_email"},
+		{"users", "email, role", "idx_users_email_role"},
+		{"users", "status", "idx_users_status"},
+
+		// Shift indexes for volunteer queries
+		{"shifts", "assigned_volunteer_id", "idx_shifts_volunteer_id"},
+		{"shifts", "assigned_volunteer_id, date", "idx_shifts_volunteer_date"},
+		{"shifts", "date", "idx_shifts_date"},
+
+		// Help request indexes
+		{"help_requests", "email", "idx_help_requests_email"},
+		{"help_requests", "status", "idx_help_requests_status"},
+
+		// Donation indexes
+		{"donations", "contact_email", "idx_donations_contact_email"},
+		{"donations", "created_at", "idx_donations_created_at"},
+
+		// General performance indexes
+		{"users", "created_at", "idx_users_created_at"},
+		{"users", "updated_at", "idx_users_updated_at"},
+	}
+
+	for _, idx := range indexes {
+		indexSQL := fmt.Sprintf("CREATE INDEX IF NOT EXISTS %s ON %s (%s)",
+			idx.name, idx.table, idx.columns)
+
+		if err := db.Exec(indexSQL).Error; err != nil {
+			mm.logger.Printf("Warning: Failed to create index %s: %v", idx.name, err)
+		} else {
+			mm.logger.Printf("Created index: %s", idx.name)
+		}
+	}
+
+	return nil
+}
+
+// dropIndexes drops performance indexes (rollback function)
+func (mm *MigrationManager) dropIndexes(db *gorm.DB) error {
+	mm.logger.Println("Dropping performance indexes...")
+
+	indexNames := []string{
+		"idx_users_email", "idx_users_email_role", "idx_users_status",
+		"idx_shifts_volunteer_id", "idx_shifts_volunteer_date", "idx_shifts_date",
+		"idx_help_requests_email", "idx_help_requests_status",
+		"idx_donations_contact_email", "idx_donations_created_at",
+		"idx_users_created_at", "idx_users_updated_at",
+	}
+
+	for _, indexName := range indexNames {
+		dropSQL := fmt.Sprintf("DROP INDEX IF EXISTS %s", indexName)
+		if err := db.Exec(dropSQL).Error; err != nil {
+			mm.logger.Printf("Warning: Failed to drop index %s: %v", indexName, err)
+		}
+	}
+
+	return nil
 }
 
 // Helper functions
