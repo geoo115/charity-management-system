@@ -24,7 +24,7 @@ require (
 	go.opentelemetry.io/otel/sdk v1.38.0
 	go.opentelemetry.io/otel/trace v1.38.0
 	golang.org/x/crypto v0.42.0
-	golang.org/x/time v0.13.0
+	golang.org/x/time v0.14.0
 	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.31.0
 )
